@@ -1,0 +1,29 @@
+# ============================================================
+# CYBERDECK PORTFOLIO - Git Ignore Rules
+# ============================================================
+
+# Private local configuration (Contains recipient email & secrets)
+config.local.php
+.env
+.env.local
+
+# Private local profile & project overrides
+content/*.local.json
+content/profile.local.json
+
+# Internal planning documents & concepts
+/intern/
+
+# Optional private avatar overrides
+assets/img/*.local.*
+assets/img/*.private.*
+
+# Temporary cache & logs
+cache/
+*.log
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

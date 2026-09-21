@@ -1,0 +1,174 @@
+[
+  {
+    "slug": "matrix-terminal",
+    "title": "Matrix-Terminal",
+    "category": "CLI / Web Shell",
+    "status": "OPERATIONAL // V2.4",
+    "highlight": "Interaktive Cyber-Shell mit Live-Streaming, Canvas Matrix-Regen und dynamischer Login-State-Machine.",
+    "tags": ["Vanilla JS", "HTML5 Canvas", "Web Audio API", "No-Framework"],
+    "features": [
+      "Autonomes Audiomischpult mit Synthesizer-Tastaturklicks",
+      "Dynamische Farbmorphing-Engine (Cyan, Amber, Alert Red)",
+      "Kontextabhängiger Befehlsparser mit Tab-Autovervollständigung",
+      "Vollständige Mobile-Touchscreen-Unterstützung mit transparentem Input-Bridge"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/matrix_preview.svg",
+        "caption": "Terminal Buffer & Matrix Stream Architecture"
+      }
+    ],
+    "links": [
+      { "label": "Source Code", "url": "https://github.com", "type": "github" },
+      { "label": "Live Shell", "url": "#terminal", "type": "demo" }
+    ],
+    "content": "### Projekt-Übersicht: Matrix-Terminal\n\nDas **Matrix-Terminal** ist das Herzstück des CyberDecks. Entwickelt nach dem Prinzip der kompromisslosen Zero-Dependency-Architektur, bringt es das Look & Feel eines 90er-Jahre Militär-Lagezentrums in den modernen Browser.\n\n#### Technische Highlights\n* **Audio-Synthese:** Jeder Tastaturanschlag generiert via Web Audio API einen einzigartigen Audio-Impuls mit Frequenz- und Lautstärke-Jitter.\n* **State-Machine:** Authentifizierung zwischen `guest`, `user` und `admin` mit reaktivem Color-Morphing.\n\n```javascript\n// Beispiel Audio-Impuls Generation\nconst osc = audioCtx.createOscillator();\nconst gain = audioCtx.createGain();\nosc.type = 'triangle';\nosc.frequency.setValueAtTime(480 + (Math.random() * 40 - 20), audioCtx.currentTime);\n```\n\n#### Status\nIn aktiver Verwendung als primäres Navigations- und Kontroll-Interface."
+  },
+  {
+    "slug": "singularity-speedrun",
+    "title": "Singularity Speedrun",
+    "category": "AI Automation / Game",
+    "status": "ACTIVE // ALPHA",
+    "highlight": "Gamifizierter AI-Prompt-Simulator: Wie schnell lässt sich eine autonome KI zur technologischen Singularität orchestrieren?",
+    "tags": ["Prompt Engineering", "Vibecoding", "Autonomous Agents", "FastAPI"],
+    "features": [
+      "Echtzeit-Scoring von Prompt-Kaskaden",
+      "Visualisierung rekursiver Selbstverbesserungszyklen",
+      "Leaderboard mit kryptografischer Verifikation"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/singularity_speedrun.svg",
+        "caption": "Recursion Loop Tracker"
+      }
+    ],
+    "links": [
+      { "label": "Repository", "url": "https://github.com", "type": "github" }
+    ],
+    "content": "### Singularity Speedrun\n\nEin interaktives Experiment an der Schnittstelle von Prompt-Engineering und Systemdynamik. Spieler treten gegeneinander an, um mit minimalen Prompt-Tokens komplexe Multi-Agenten-Netzwerke zu stabilisieren.\n\n#### Kernkomponenten\n1. **Token Efficiency Metric:** Automatische Bewertung von Komplexität vs. Informationsdichte.\n2. **Drift Detection:** Verhindert Halluzinations-Kaskaden in Echtzeit.\n\n> *\"The quickest path to the future is prompt clarity.\"* - Agent Log"
+  },
+  {
+    "slug": "singularity-kompendium",
+    "title": "Singularity Kompendium",
+    "category": "Knowledge Base / Docs",
+    "status": "ONLINE // ARCHIVE",
+    "highlight": "Umfassende Wissensdatenbank und Nachschlagewerk für autonome KI-Workflows, Agenten-Muster und Vibecoding-Strategien.",
+    "tags": ["Markdown", "Flat-File", "Knowledge Graph", "Search Engine"],
+    "features": [
+      "Volltextsuche im Speicher ohne externe Datenbank",
+      "Interaktive Taxonomie für Prompt-Patterns und Anti-Patterns",
+      "Exportierbare Markdown- und JSON-Blueprints"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/kompendium.svg",
+        "caption": "Agent Taxonomy Graph"
+      }
+    ],
+    "links": [
+      { "label": "Knowledge Base", "url": "https://github.com", "type": "docs" }
+    ],
+    "content": "### Singularity Kompendium\n\nStrukturierte Dokumentation moderner Softwareentwicklung mit LLMs. Behandelt praxisnahe Architekturen wie Tree-of-Thought, ReAct-Loops, Kontext-Pruning und Multi-Agent Pair Programming."
+  },
+  {
+    "slug": "futterfaden",
+    "title": "FutterFaden Essensplan",
+    "category": "Web Application",
+    "status": "PRODUCTION // VER 3.1",
+    "highlight": "Intelligenter, kollaborativer Wochenplaner für Ernährung, Rezeptverwaltung und automatisierte Einkaufslisten.",
+    "tags": ["Vibecoding", "PWA", "Local-First", "Tailwind CSS"],
+    "features": [
+      "Offline-Fähigkeit durch Local-First Speicherarchitektur",
+      "Dynamische Nährwert- und Zutaten-Kalkulation",
+      "Synchronisation für Mehrpersonen-Haushalte"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/futterfaden.svg",
+        "caption": "Smart Recipe & Schedule Matrix"
+      }
+    ],
+    "links": [
+      { "label": "Live Demo", "url": "https://github.com", "type": "demo" },
+      { "label": "GitHub", "url": "https://github.com", "type": "github" }
+    ],
+    "content": "### FutterFaden Essensplan\n\nEntwickelt, um die wöchentliche Essensplanung radikal zu vereinfachen. Das System optimiert Einkaufslisten nach Supermarkt-Regalzonen und minimiert Lebensmittelverschwendung."
+  },
+  {
+    "slug": "taschenschatz",
+    "title": "TaschenSchatz",
+    "category": "Mobile Tool / Utility",
+    "status": "MAINTAINED",
+    "highlight": "Minimalistische Inventarisierungs- und Werte-Tracking-App für Sammlerstücke, Hardware und digitale Assets.",
+    "tags": ["Mobile UI", "IndexedDB", "Crypto-Export", "PWA"],
+    "features": [
+      "Vollständig clientseitige Verschlüsselung sensibler Daten",
+      "Barcode- und QR-Scanner Integration",
+      "Visuelle Statistiken über Wertentwicklung"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/taschenschatz.svg",
+        "caption": "Inventory Vault Interface"
+      }
+    ],
+    "links": [
+      { "label": "Projekt Repository", "url": "https://github.com", "type": "github" }
+    ],
+    "content": "### TaschenSchatz\n\nEin privater Safe für physische und digitale Besitztümer. Sämtliche Daten verbleiben lokal auf dem Endgerät des Benutzers."
+  },
+  {
+    "slug": "shadowdex",
+    "title": "ShadowDex",
+    "category": "Cyberpunk Utility",
+    "status": "CLASSIFIED // SEC-OPS",
+    "highlight": "Taktisches HUD-Dashboard zur Überwachung von Netzwerk-Nodes, API-Latenzen und System-Telemetrie.",
+    "tags": ["Canvas API", "Realtime WebSockets", "Glow UI", "Telemetry"],
+    "features": [
+      "Pulsierende Echtzeit-EKG- und Frequenzwellen",
+      "Rotierendes Radar-Grid mit Node-Tracking",
+      "Akustische Warnsignale bei Latenz-Spikes"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/shadowdex.svg",
+        "caption": "Node Telemetry Radar"
+      }
+    ],
+    "links": [
+      { "label": "Telemetrie Stream", "url": "https://github.com", "type": "demo" }
+    ],
+    "content": "### ShadowDex HUD\n\nEin experimentelles Lagezentrum für Server- und Netzwerk-Monitoring im stylischen War-Room-Look."
+  },
+  {
+    "slug": "portfolio",
+    "title": "Portfolio (CyberDeck)",
+    "category": "Meta / Core System",
+    "status": "ACTIVE // CURRENT",
+    "highlight": "Dieses interaktive CyberDeck Portfolio OS. Die Fusion aus Retro-Sci-Fi, modernem Web-Engineering und radikaler User Experience.",
+    "tags": ["Vanilla ES6", "Web Audio", "Glassmorphism", "Flat-File"],
+    "features": [
+      "Frei bewegliche, resizbare Cyber-Fenster mit L-Brackets",
+      "Vollautarke Sound-Synthese & Matrix-Regen",
+      "Responsive Tactic-Pocket-Modus für Smartphones",
+      "Admin Easter-Egg Suite (Wire-Transfer, Overclock, Self-Destruct)"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "assets/img/projects/cyberdeck.svg",
+        "caption": "CyberDeck OS Architecture"
+      }
+    ],
+    "links": [
+      { "label": "Architektur-Plan", "url": "intern/cyber_portfolio_projektplan.md", "type": "docs" }
+    ],
+    "content": "### CyberDeck Portfolio (BlackBox / SecOps-UI)\n\nEntwickelt als persönliche Visitenkarte eines Vibecoders. Bricht bewusst mit sterilen Standard-Templates und verwandelt das Portfolio in eine interaktive Geheimdienst-Konsole."
+  }
+]

@@ -1,0 +1,879 @@
+/* ============================================================
+   CYBERDECK PORTFOLIO (BlackBox / SecOps-UI)
+   Custom Cyberpunk Stylesheet & Design System
+   ============================================================ */
+
+/* 1. Local Typography (Oxanium Webfonts) */
+@font-face {
+  font-family: 'Oxanium';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/oxanium/oxanium-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Oxanium';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/oxanium/oxanium-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Oxanium';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/oxanium/oxanium-latin-700-normal.woff2') format('woff2');
+}
+
+/* 2. Global Variables & Color States */
+:root {
+  --font-cyber: 'Oxanium', monospace, -apple-system, sans-serif;
+  --bg-canvas: #020712;
+  --win-bg: rgba(8, 20, 38, 0.80);
+  --win-border: rgba(0, 229, 255, 0.28);
+  --win-glow: #00e5ff;
+  --accent: #00e5ff;
+  --accent-rgb: 0, 229, 255;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --taskbar-bg: rgba(6, 16, 32, 0.85);
+  --selection-bg: rgba(0, 229, 255, 0.3);
+}
+
+/* Color Schemes / State Machine */
+.theme-cyan {
+  --win-border: rgba(0, 229, 255, 0.35);
+  --win-glow: #00e5ff;
+  --accent: #00e5ff;
+  --accent-rgb: 0, 229, 255;
+}
+
+.theme-amber {
+  --win-border: rgba(255, 183, 3, 0.45);
+  --win-glow: #ffb703;
+  --accent: #ffb703;
+  --accent-rgb: 255, 183, 3;
+}
+
+.theme-red {
+  --win-border: rgba(255, 0, 85, 0.55);
+  --win-glow: #ff0055;
+  --accent: #ff0055;
+  --accent-rgb: 255, 0, 85;
+}
+
+.theme-green {
+  --win-border: rgba(112, 224, 0, 0.45);
+  --win-glow: #70e000;
+  --accent: #70e000;
+  --accent-rgb: 112, 224, 0;
+}
+
+.theme-gold {
+  --win-border: rgba(255, 215, 0, 0.65);
+  --win-glow: #ffd700;
+  --accent: #ffd700;
+  --accent-rgb: 255, 215, 0;
+}
+
+.theme-purple {
+  --win-border: rgba(217, 70, 239, 0.5);
+  --win-glow: #d946ef;
+  --accent: #d946ef;
+  --accent-rgb: 217, 70, 239;
+}
+
+.theme-white {
+  --win-border: rgba(248, 250, 252, 0.5);
+  --win-glow: #f8fafc;
+  --accent: #f8fafc;
+  --accent-rgb: 248, 250, 252;
+}
+
+/* Overclock & Undervolt Modifiers */
+body.mode-overclock {
+  filter: saturate(1.5) brightness(1.25) contrast(1.1);
+}
+
+body.mode-undervolt {
+  filter: saturate(0.4) brightness(0.75) contrast(0.9);
+}
+
+/* 3. Base & Desktop Root */
+html, body {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--bg-canvas);
+  color: var(--text-main);
+  font-family: var(--font-cyber);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: #ffffff;
+}
+
+/* Background Canvas Layer */
+#matrix-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Scanline Subgrid Overlay - clean CRT line without chromatic aberration */
+.scanlines-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(0, 0, 0, 0) 50%, 
+    rgba(0, 0, 0, 0.32) 50%
+  );
+  background-size: 100% 3px;
+  opacity: 0.45;
+}
+
+/* Desktop Work Area */
+#desktop-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 60px);
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Desktop Icon Grid */
+/* Desktop Icon Grid */
+.desktop-icons-container {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 2vh;
+  max-height: calc(100% - 72px);
+  z-index: 12;
+}
+
+.desktop-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: clamp(92px, 7.5vw, 130px);
+  height: clamp(82px, 10vh, 120px);
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.desktop-shortcut:hover {
+  background: rgba(var(--accent-rgb), 0.15);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
+  transform: translateY(-2px);
+}
+
+.desktop-shortcut .icon-box {
+  width: clamp(48px, 5.5vh, 66px);
+  height: clamp(48px, 5.5vh, 66px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.65));
+}
+
+.desktop-shortcut .label {
+  margin-top: 6px;
+  font-size: clamp(11px, 1.25vh, 13px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #e2e8f0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* 4. Cyber-Window Geometry & Glassmorphism */
+.cyber-window {
+  position: absolute;
+  background: var(--win-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--win-border);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  border-radius: 2px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.cyber-window.is-focused {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 18px rgba(var(--accent-rgb), 0.22);
+}
+
+/* Corner Brackets */
+.cyber-window .bracket {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--win-glow);
+  filter: drop-shadow(0 0 4px var(--win-glow));
+  pointer-events: none;
+  z-index: 25;
+}
+
+.cyber-window .bracket-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.cyber-window .bracket-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.cyber-window .bracket-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+.cyber-window .bracket-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* Center Bottom Light Accent */
+.cyber-window::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45%;
+  height: 2px;
+  background: radial-gradient(circle, var(--win-glow) 0%, transparent 100%);
+  box-shadow: 0 0 8px var(--win-glow);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Window Header */
+.cyber-window-header {
+  height: 38px;
+  background: rgba(12, 28, 54, 0.75);
+  border-bottom: 1px solid var(--win-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.cyber-window-header:active {
+  cursor: grabbing;
+}
+
+.cyber-window-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.cyber-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cyber-win-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  color: var(--text-main);
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.cyber-win-btn:hover {
+  background: rgba(var(--accent-rgb), 0.25);
+  color: #ffffff;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--win-glow);
+}
+
+.cyber-win-btn.close-btn:hover {
+  background: rgba(255, 0, 85, 0.35);
+  border-color: #ff0055;
+  color: #ffffff;
+  box-shadow: 0 0 8px #ff0055;
+}
+
+/* Window Content Body */
+.cyber-window-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  position: relative;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute;
+  z-index: 30;
+}
+.resize-n  { top: 0; left: 6px; right: 6px; height: 6px; cursor: ns-resize; }
+.resize-s  { bottom: 0; left: 6px; right: 6px; height: 6px; cursor: ns-resize; }
+.resize-e  { top: 6px; bottom: 6px; right: 0; width: 6px; cursor: ew-resize; }
+.resize-w  { top: 6px; bottom: 6px; left: 0; width: 6px; cursor: ew-resize; }
+.resize-nw { top: 0; left: 0; width: 10px; height: 10px; cursor: nwse-resize; }
+.resize-ne { top: 0; right: 0; width: 10px; height: 10px; cursor: nesw-resize; }
+.resize-sw { bottom: 0; left: 0; width: 10px; height: 10px; cursor: nesw-resize; }
+.resize-se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: nwse-resize; }
+
+/* 5. Terminal Engine Styling */
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: 'Oxanium', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.terminal-history {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+.terminal-line {
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.terminal-line.output-info    { color: #38bdf8; }
+.terminal-line.output-success { color: #4ade80; }
+.terminal-line.output-warn    { color: #fbbf24; }
+.terminal-line.output-error   { color: #f87171; }
+.terminal-line.output-gold    { color: #facc15; font-weight: bold; }
+
+.terminal-input-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-top: 4px;
+}
+
+.terminal-prompt {
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.terminal-command-display {
+  color: #ffffff;
+  min-height: 1.2em;
+  white-space: pre-wrap;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background-color: var(--accent);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: cursor-blink 1s steps(2, start) infinite;
+  box-shadow: 0 0 6px var(--win-glow);
+}
+
+@keyframes cursor-blink {
+  to { visibility: hidden; }
+}
+
+/* Hidden input bridge for mobile virtual keyboard */
+.terminal-hidden-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: text;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: transparent;
+  pointer-events: auto;
+}
+
+/* Terminal-specific window body layout to prevent collapse or double-scroll */
+.cyber-window[id="win-terminal"] .cyber-window-body {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 12px !important;
+}
+
+#terminal-mount {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 6. Windows-Style Cyber Taskbar / Dock */
+#taskbar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 48px;
+  max-width: calc(100vw - 32px);
+  background: var(--taskbar-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--win-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 12px rgba(var(--accent-rgb), 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  gap: 8px;
+  z-index: 1000;
+  transition: all 0.25s ease;
+}
+
+/* Centered list of open windows */
+.dock-windows-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.taskbar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 4px;
+  color: var(--text-main);
+  font-family: 'Oxanium', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.taskbar-item:hover {
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3);
+}
+
+.taskbar-item.is-active {
+  background: rgba(var(--accent-rgb), 0.26);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 0 12px var(--win-glow), inset 0 0 6px rgba(var(--accent-rgb), 0.35);
+  font-weight: 600;
+}
+
+.taskbar-item.is-minimized {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.taskbar-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.taskbar-item-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.taskbar-item-title {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Auto-compact mode: when taskbar becomes too wide, hide window titles */
+.dock-windows-list.compact-mode .taskbar-item-title {
+  display: none;
+}
+
+.dock-windows-list.compact-mode .taskbar-item {
+  width: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+.taskbar-empty-hint {
+  font-size: 11px;
+  color: rgba(0, 229, 255, 0.5);
+  letter-spacing: 1px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+/* Right System Tray (Sound & Clock) */
+.dock-system-tray {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.dock-tray-item {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dock-tray-item:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+  border-color: rgba(var(--accent-rgb), 0.4);
+  color: var(--accent);
+}
+
+.dock-clock {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--accent);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* 7. Offshore Wire Transfer HUD Banner */
+#wire-transfer-banner {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: rgba(20, 15, 3, 0.96);
+  border: 1px solid #ffd700;
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.45);
+  padding: 14px 22px;
+  border-radius: 4px;
+  z-index: 900;
+  transform: translateY(-260px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.35s ease, visibility 0.45s;
+  font-family: 'Oxanium', monospace;
+}
+
+#wire-transfer-banner.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* 8. Desktop Context Menu */
+#cyber-context-menu {
+  position: absolute;
+  display: none;
+  background: rgba(6, 16, 32, 0.95);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--win-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 12px rgba(var(--accent-rgb), 0.2);
+  border-radius: 4px;
+  padding: 6px 0;
+  z-index: 2000;
+  min-width: 190px;
+  font-size: 12px;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background 0.12s ease;
+}
+
+.context-menu-item:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+  color: var(--accent);
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+/* 9. BIOS / Kernel Bootloader Overlay */
+#boot-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #020617;
+  color: #38bdf8;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 40px;
+  font-family: 'Oxanium', monospace;
+  font-size: 14px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.boot-lines {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.boot-skip-hint {
+  position: absolute;
+  bottom: 24px;
+  right: 28px;
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* 10. CRT Collapse & Glitch Animation */
+@keyframes crt-collapse {
+  0% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+  }
+  60% {
+    transform: scale(1, 0.003);
+    filter: brightness(3);
+  }
+  100% {
+    transform: scale(0, 0.003);
+    filter: brightness(10);
+  }
+}
+
+.crt-collapse-active {
+  animation: crt-collapse 0.65s cubic-bezier(0.23, 1, 0.32, 1) forwards !important;
+}
+
+/* 11. Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-rgb), 0.35);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* 12. Markdown Content Inside Project Windows */
+.markdown-body {
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: var(--accent);
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.markdown-body p {
+  margin-bottom: 10px;
+}
+
+.markdown-body code {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Oxanium', monospace;
+  color: #38bdf8;
+}
+
+.markdown-body pre {
+  background: rgba(2, 8, 20, 0.85);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+  color: #94a3b8;
+  margin: 12px 0;
+  font-style: italic;
+}
+
+.markdown-body ul, .markdown-body ol {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.markdown-body li {
+  margin-bottom: 4px;
+}
+
+/* 13. Mobile / Responsive Adaptations (< 768px Tactic Pocket Mode) */
+@media (max-width: 767px) {
+  #desktop-area {
+    height: calc(100% - 56px);
+  }
+
+  .desktop-icons-container {
+    top: 16px;
+    left: 16px;
+    gap: 14px;
+  }
+
+  .desktop-shortcut {
+    width: 68px;
+  }
+
+  .desktop-shortcut .icon-box {
+    width: 36px;
+    height: 36px;
+  }
+
+  .desktop-shortcut .label {
+    font-size: 10px;
+  }
+
+  /* Fullscreen Single-Sheet Mode on Mobile */
+  .cyber-window {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100dvh - 56px) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid var(--win-border) !important;
+  }
+
+  .resize-handle {
+    display: none !important;
+  }
+
+  .cyber-win-btn.minimize-btn,
+  .cyber-win-btn.maximize-btn {
+    display: none !important;
+  }
+
+  .cyber-win-btn.close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  #taskbar {
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    transform: none;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    height: 56px;
+    justify-content: space-around;
+    padding: 0 4px;
+  }
+
+  .dock-item {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dock-clock {
+    display: none;
+  }
+
+  .dock-separator {
+    display: none;
+  }
+}
