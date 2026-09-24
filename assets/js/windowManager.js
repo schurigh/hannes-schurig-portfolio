@@ -60,7 +60,7 @@ class WindowManager {
       } else if (id === 'about-profile') {
         icon = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
       } else if (id === 'telemetry-radar') {
-        icon = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`;
+        icon = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9.5" stroke-width="1.8" /><circle cx="12" cy="12" r="4.8" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="1.5 1.5" /><path d="M12 12 L20.2 8.2 A 9.5 9.5 0 0 0 17.5 4.8 Z" fill="currentColor" fill-opacity="0.3" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><line x1="12" y1="12" x2="17.5" y2="4.8" stroke-width="1.8" stroke-linecap="round" /></svg>`;
       } else if (id === 'contact-modal') {
         icon = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`;
       } else {
@@ -382,15 +382,78 @@ class WindowManager {
   }
 
   cascadeWindows() {
-    let offset = 20;
+    if (!this.windows || this.windows.size === 0) return;
+
+    // 1. Unminimize and unmaximize all windows
     this.windows.forEach((winData) => {
       if (winData.isMinimized) this.restoreWindow(winData.id);
       if (winData.isMaximized) this.toggleMaximize(winData.id);
-
-      winData.element.style.left = `${offset}px`;
-      winData.element.style.top = `${offset}px`;
-      offset += 32;
     });
+
+    // 2. Collect and calculate sizes (area = width * height)
+    const winList = Array.from(this.windows.values());
+    const getArea = (w) => {
+      const width = w.element.offsetWidth || parseFloat(w.element.style.width) || 400;
+      const height = w.element.offsetHeight || parseFloat(w.element.style.height) || 300;
+      return width * height;
+    };
+
+    // Sort descending by size: largest windows first (index 0), smallest last (index N-1)
+    winList.sort((a, b) => getArea(b) - getArea(a));
+
+    // 3. Viewport-based proportional diagonal offset
+    const deskRect = this.desktopArea ? this.desktopArea.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight - 60 };
+    const vW = deskRect.width || window.innerWidth;
+    const vH = deskRect.height || window.innerHeight;
+
+    // Proportional diagonal step (~4.5% width, ~6.0% height)
+    let stepX = Math.round(vW * 0.045);
+    let stepY = Math.round(vH * 0.06);
+
+    const count = winList.length;
+    // Scale step if there are many windows so they stay within desktop bounds
+    if (count > 1) {
+      const maxSpanX = vW * 0.50;
+      const maxSpanY = vH * 0.50;
+      if ((count - 1) * stepX > maxSpanX) {
+        stepX = Math.floor(maxSpanX / (count - 1));
+      }
+      if ((count - 1) * stepY > maxSpanY) {
+        stepY = Math.floor(maxSpanY / (count - 1));
+      }
+    }
+    stepX = Math.max(28, stepX);
+    stepY = Math.max(32, stepY);
+
+    const startX = Math.max(24, Math.round(vW * 0.04));
+    const startY = Math.max(20, Math.round(vH * 0.035));
+
+    // 4. Position each window: largest in back (lowest z-index), smallest in front (highest z-index)
+    winList.forEach((winData, idx) => {
+      // Increasing z-index: index 0 (largest) gets the lowest, index N-1 (smallest) gets the highest
+      winData.element.style.zIndex = ++this.highestZIndex;
+
+      let posX = startX + idx * stepX;
+      let posY = startY + idx * stepY;
+
+      // Keep within bounds
+      const winW = winData.element.offsetWidth || parseFloat(winData.element.style.width) || 400;
+      const winH = winData.element.offsetHeight || parseFloat(winData.element.style.height) || 300;
+      posX = Math.max(10, Math.min(posX, vW - winW - 10));
+      posY = Math.max(10, Math.min(posY, vH - winH - 10));
+
+      winData.element.style.left = `${posX}px`;
+      winData.element.style.top = `${posY}px`;
+    });
+
+    // 5. Focus the smallest window (the frontmost window)
+    if (winList.length > 0) {
+      const topWin = winList[winList.length - 1];
+      this.windows.forEach((w) => w.element.classList.remove('is-focused'));
+      topWin.element.classList.add('is-focused');
+      window.dispatchEvent(new CustomEvent('window:focused', { detail: { id: topWin.id } }));
+    }
+
     sound.playWindowOpen();
   }
 
@@ -424,18 +487,34 @@ class WindowManager {
     winData.element.classList.add(`theme-${themeName}`);
   }
 
+  setGlobalTheme(themeName) {
+    const targetTheme = (themeName || '').trim().toLowerCase();
+    if (!this.themes.includes(targetTheme)) {
+      return { error: `INVALID THEME COLOR: '${themeName}'. AVAILABLE: ${this.themes.map((t) => t.toUpperCase()).join(', ')}` };
+    }
+    this.themeIndex = this.themes.indexOf(targetTheme);
+    this.windows.forEach((winData) => {
+      this.setTheme(winData.id, targetTheme);
+    });
+    document.documentElement.className = document.documentElement.className.replace(/theme-[a-z]+/g, '').trim();
+    document.documentElement.classList.add(`theme-${targetTheme}`);
+    sound.playWindowOpen();
+    return { success: true, theme: targetTheme };
+  }
+
   cycleGlobalTheme() {
     this.themeIndex = (this.themeIndex + 1) % this.themes.length;
     const nextTheme = this.themes[this.themeIndex];
-
-    this.windows.forEach((winData) => {
-      this.setTheme(winData.id, nextTheme);
-    });
-
-    document.documentElement.className = document.documentElement.className.replace(/theme-[a-z]+/g, '').trim();
-    document.documentElement.classList.add(`theme-${nextTheme}`);
-    sound.playWindowOpen();
+    this.setGlobalTheme(nextTheme);
     return nextTheme;
+  }
+
+  resetPowerAndTheme() {
+    this.isOverclocked = false;
+    this.isUndervolted = false;
+    document.body.classList.remove('mode-overclock', 'mode-undervolt');
+    this.setGlobalTheme('cyan');
+    return { success: true };
   }
 
   setOverclock(enabled) {

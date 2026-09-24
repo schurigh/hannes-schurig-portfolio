@@ -5,6 +5,7 @@
     "role": "Fullstack Architect & Creative Technologist",
     "clearance": "ROOT / LEVEL 5",
     "location": "GRID//NODE - CyberDeck Terminal",
+    "coordinates": "37°46'N 122°25'W",
     "status": "ONLINE // READY FOR OPS"
   },
   "bio": "Software-Entwickler und digitaler Architekt. Fokus auf moderne Web-Technologien, intuitive Interfaces und kreatives Frontend-Engineering. Spezialisiert auf performante UIs, schlanke Architekturen und interaktive Browser-Erlebnisse.",
@@ -26,5 +27,42 @@
     { "label": "GitHub", "url": "https://github.com/example", "icon": "github" },
     { "label": "LinkedIn", "url": "https://linkedin.com/in/example", "icon": "linkedin" },
     { "label": "E-Mail", "url": "mailto:operator@example.com", "icon": "mail" }
+  ],
+  "jobs": [
+    {
+      "startDate": "2024-01",
+      "endDate": "heute",
+      "title": "Principal Systems Engineer",
+      "company": "Nexus Cybernetics",
+      "description": "Architektur verteilter Micro-Frontends und Integration KI-gestützter Observability-Pipelines."
+    },
+    {
+      "startDate": "2021-06",
+      "endDate": "2023-12",
+      "title": "Senior Frontend Architect",
+      "company": "Vortex Interactive",
+      "description": "Entwicklung modularer UI-Komponentenbibliotheken und Realtime-Dashboards mit WebSockets."
+    },
+    {
+      "startDate": "2018-03",
+      "endDate": "2021-05",
+      "title": "Fullstack Software Developer",
+      "company": "Aether Dynamics",
+      "description": "Entwurf und Bereitstellung skalierbarer REST-Services sowie interaktiver Web-Frontends."
+    },
+    {
+      "startDate": "2015-08",
+      "endDate": "2018-02",
+      "title": "UI / UX Engineer",
+      "company": "Synthetix Labs",
+      "description": "Entwicklung barrierefreier Designsysteme und browserbasierter Prototypen."
+    },
+    {
+      "startDate": "2013-10",
+      "endDate": "2015-07",
+      "title": "Junior Web Developer",
+      "company": "NovaTech Solutions",
+      "description": "Umsetzung responsiver Web-Layouts und Pflege bestehender Datenbankstrukturen."
+    }
   ]
 }

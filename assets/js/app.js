@@ -11,7 +11,6 @@ import { dataLoader } from './dataLoader.js';
 import { windowManager } from './windowManager.js';
 import { TerminalShell } from './terminal.js';
 import { RadarHUD } from './radarCanvas.js';
-import { asciiRenderer } from './asciiRenderer.js';
 import { lightboxViewer } from './lightbox.js';
 
 /**
@@ -190,9 +189,22 @@ class App {
       },
       {
         id: 'radar',
-        title: 'Telemetrie',
+        title: 'Skill Radar',
         action: () => this.openRadarWindow(),
-        icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`
+        icon: `<svg class="w-full h-full p-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <defs>
+            <linearGradient id="radar-sweep-icon-grad" x1="12" y1="12" x2="20" y2="6" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="currentColor" stop-opacity="0.45" />
+              <stop offset="100%" stop-color="currentColor" stop-opacity="0.05" />
+            </linearGradient>
+          </defs>
+          <circle cx="12" cy="12" r="9.2" stroke-width="1.8" />
+          <circle cx="12" cy="12" r="4.8" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="1.5 1.5" />
+          <path d="M12 12 L20.2 8.2 A 9.2 9.2 0 0 0 17.5 4.8 Z" fill="url(#radar-sweep-icon-grad)" stroke="none" />
+          <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+          <line x1="12" y1="12" x2="17.5" y2="4.8" stroke-width="1.8" stroke-linecap="round" />
+          <circle cx="15.8" cy="7.2" r="0.9" fill="currentColor" stroke="none" />
+        </svg>`
       },
       {
         id: 'contact',
@@ -383,9 +395,10 @@ class App {
 
   // Open Terminal Window (with persistent & safe re-mounting)
   openTerminal() {
+    const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
     const win = windowManager.createWindow({
       id: 'terminal',
-      title: 'SEC//WIN: TERMINAL [ACTIVE]',
+      title: isLocal ? 'SEC//WIN: TERMINAL [ROOT // ADMIN]' : 'SEC//WIN: TERMINAL [ACTIVE]',
       contentHtml: `<div id="terminal-mount" style="height: 100%; width: 100%; display: flex; flex-direction: column;"></div>`,
       width: 640,
       height: 400,
@@ -407,6 +420,13 @@ class App {
 
   // Open Projects Explorer Window (Design 4: Circuit Timeline Stream)
   openProjectsExplorer() {
+    const existing = windowManager.getWindow('projects-explorer');
+    if (existing) {
+      windowManager.restoreWindow('projects-explorer');
+      windowManager.focusWindow('projects-explorer');
+      return;
+    }
+
     const projects = dataLoader.getProjects();
 
     // Chronological order: 2025 at the top, going down to today (2026)
@@ -506,12 +526,13 @@ class App {
       </div>
     `;
 
+    const startHeight = Math.max(600, Math.round(window.innerHeight * 0.8));
     const win = windowManager.createWindow({
       id: 'projects-explorer',
       title: 'SEC//WIN: PROJECTS_EXPLORER',
       contentHtml,
       width: 900,
-      height: 600
+      height: startHeight
     });
 
     // Attach click events on each timeline card to open project details
@@ -647,7 +668,17 @@ class App {
 
   // Open About Operator Profile (ASCII Portrait + Bio + Radar)
   async openAboutProfile() {
+    const existing = windowManager.getWindow('about-profile');
+    if (existing) {
+      windowManager.restoreWindow('about-profile');
+      windowManager.focusWindow('about-profile');
+      return;
+    }
+
     const profile = dataLoader.getProfile() || { operator: { name: 'Operator' } };
+    const avatarPath = profile?.operator?.avatar || 'data/img/operator_hologram.webp';
+    const rawCoords = profile?.operator?.coordinates || "52°23'N 13°03'E";
+    const locDisplay = rawCoords.startsWith('LOC:') ? rawCoords : `LOC: ${rawCoords}`;
 
     const win = windowManager.createWindow({
       id: 'about-profile',
@@ -655,10 +686,59 @@ class App {
       contentHtml: `
         <div class="space-y-4">
           <div class="flex flex-col md:flex-row gap-4 items-start">
-            <!-- Left: ASCII Portrait Canvas -->
-            <div class="w-full md:w-64 flex-shrink-0 flex flex-col items-center border border-cyan-500 border-opacity-25 p-2 rounded bg-black bg-opacity-50">
-              <div class="text-[11px] text-cyan-400 font-mono tracking-wider mb-2">LIVE ASCII STREAM</div>
-              <pre id="ascii-target" style="font-family:'Consolas','Courier New','Lucida Console',monospace; font-size:6.6px; line-height:1; letter-spacing:0; color:#00e5ff; overflow:hidden; margin:0 auto; text-align:center;"></pre>
+            <!-- Left: Cyber Overwatch Satellite Screen (Design 2: Cyber/Dither Hologram) -->
+            <div class="w-full md:w-80 flex-shrink-0 flex flex-col border border-cyan-500 border-opacity-35 rounded bg-black bg-opacity-70 overflow-hidden shadow-[0_0_24px_rgba(0,229,255,0.18)] overwatch-screen group relative">
+              <!-- Top Satellite Header (Stacked Vertically) -->
+              <div class="flex flex-col px-3 py-1.5 bg-cyan-950 bg-opacity-70 border-b border-cyan-500 border-opacity-30 font-mono">
+                <div class="flex items-center gap-2 text-cyan-300 font-bold tracking-wider text-[10px]">
+                  <span class="cyber-pulse-dot" style="display:inline-block; width:7px; height:7px; min-width:7px; min-height:7px; border-radius:50%; background-color:#00e5ff; box-shadow:0 0 8px #00e5ff; vertical-align:middle;"></span>
+                  <span>SAT//OVERWATCH</span>
+                </div>
+                <div class="text-cyan-400 text-[9px] tracking-widest mt-0.5">ORBIT: 420KM // CH: 0x8F</div>
+              </div>
+
+              <!-- Main Hologram Viewport Stage -->
+              <div class="relative w-full aspect-square bg-[#020617] overflow-hidden flex items-center justify-center p-1">
+                <!-- 3D Hologram Image -->
+                <img 
+                  id="hologram-avatar"
+                  src="${avatarPath}" 
+                  alt="${escapeHtml(profile.operator.name)}"
+                  class="w-full h-full object-cover rounded filter contrast-110 brightness-105 transition-transform duration-200 select-none pointer-events-none" 
+                  loading="eager"
+                />
+
+                <!-- Subtle Cyber Scanline Overlay -->
+                <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.5)_51%)] bg-[length:100%_4px] opacity-35"></div>
+
+                <!-- Animated Satellite Radar Sweep Beam -->
+                <div class="absolute inset-0 pointer-events-none opacity-25 bg-gradient-to-b from-cyan-400/25 via-transparent to-transparent animate-[pulse_4s_ease-in-out_infinite]"></div>
+
+                <!-- Tactical Corner Brackets -->
+                <div class="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-cyan-400 pointer-events-none"></div>
+                <div class="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-cyan-400 pointer-events-none"></div>
+                <div class="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-cyan-400 pointer-events-none"></div>
+                <div class="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-cyan-400 pointer-events-none"></div>
+
+                <!-- Centered Dark Coordinate Location at Bottom of Stage -->
+                <div class="absolute bottom-2.5 inset-x-0 flex justify-center pointer-events-none select-none z-10">
+                  <span class="text-[9.5px] font-mono font-bold tracking-wider" style="color: #041d2c;">
+                    ${escapeHtml(locDisplay)}
+                  </span>
+                </div>
+
+                <!-- Central Targeting Reticle on Hover -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div class="w-16 h-16 border border-cyan-400 border-dashed rounded-full animate-spin [animation-duration:14s]"></div>
+                  <div class="absolute w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_8px_#00e5ff]"></div>
+                </div>
+              </div>
+
+              <!-- Bottom Satellite Telemetry Footer Bar -->
+              <div class="px-3 py-1.5 bg-black bg-opacity-80 border-t border-cyan-500 border-opacity-25 flex items-center justify-between font-mono text-[9px] text-gray-400">
+                <span class="text-cyan-300 tracking-wider">HOLO-DITHER v2.4</span>
+                <span class="text-emerald-400 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>STATUS: VERIFIED</span>
+              </div>
             </div>
 
             <!-- Right: Bio & Telemetry -->
@@ -676,64 +756,143 @@ class App {
               <!-- Telemetry Metrics -->
               <div class="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div class="p-2 border border-cyan-500 border-opacity-20 rounded bg-black bg-opacity-30">
-                  <div class="text-gray-400 text-[10px]">UPTIME</div>
+                  <div class="text-gray-400 text-[10px]">ERFAHRUNG // UPTIME</div>
                   <div class="text-cyan-400 font-bold">${profile.telemetry.uptime}</div>
                 </div>
                 <div class="p-2 border border-cyan-500 border-opacity-20 rounded bg-black bg-opacity-30">
-                  <div class="text-gray-400 text-[10px]">NEURAL SYNC</div>
-                  <div class="text-cyan-400 font-bold">${profile.telemetry.neural_sync}</div>
+                  <div class="text-gray-400 text-[10px]">STANDORT // SEKTOR</div>
+                  <div class="text-cyan-400 font-bold truncate">${profile.operator.location || 'Potsdam, DE'}</div>
                 </div>
               </div>
 
               <!-- Social Links -->
-              <div class="flex gap-2 pt-2">
-                ${profile.links.map((l) => `
-                  <a href="${l.url}" target="_blank" rel="noopener" class="text-xs px-2.5 py-1 border border-cyan-400 text-cyan-300 hover:bg-cyan-500 hover:bg-opacity-20 rounded font-mono transition">
-                    ${l.label}
-                  </a>
-                `).join('')}
+              <div class="flex gap-2 pt-2 flex-wrap">
+                ${(profile.links || []).map((l) => {
+                  const isMail = l.label?.toLowerCase().includes('mail') || l.url?.startsWith('mailto:') || l.icon === 'mail';
+                  if (isMail) {
+                    return `
+                      <button type="button" class="btn-open-contact text-xs px-2.5 py-1 border border-cyan-400 text-cyan-300 hover:bg-cyan-500 hover:bg-opacity-20 rounded font-mono transition cursor-pointer flex items-center gap-1">
+                        <span>✉</span>
+                        <span>${escapeHtml(l.label)}</span>
+                      </button>
+                    `;
+                  }
+                  return `
+                    <a href="${l.url}" target="_blank" rel="noopener" class="text-xs px-2.5 py-1 border border-cyan-400 text-cyan-300 hover:bg-cyan-500 hover:bg-opacity-20 rounded font-mono transition">
+                      ${escapeHtml(l.label)}
+                    </a>
+                  `;
+                }).join('')}
               </div>
+            </div>
+          </div>
+
+          <!-- Career & Job Experience Timeline (CV) -->
+          <div class="mt-6 pt-4 border-t border-cyan-500 border-opacity-30">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">CAREER TIMELINE // BERUFLICHER WERDEGANG</span>
+                <span class="text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${(profile.jobs || []).length} STATIONEN</span>
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono hidden sm:block">// VERIFIED EMPLOYMENT RECORD</div>
+            </div>
+
+            <div class="timeline-stream-wrapper !p-2 !pl-10">
+              <div class="timeline-circuit-bus !left-4"></div>
+              
+              ${(profile.jobs || []).map((job) => {
+                const period = job.startDate && job.endDate ? `${job.startDate} — ${job.endDate}` : (job.startDate || '');
+                return `
+                  <div class="timeline-item !mb-4">
+                    <div class="timeline-connector !w-16">
+                      <div class="timeline-node-dot"></div>
+                      <div class="timeline-branch-line"></div>
+                      <span class="timeline-branch-month text-[10px]">${escapeHtml(job.startDate || '')}</span>
+                    </div>
+                    <div class="timeline-card !p-3.5 flex-1">
+                      <div class="timeline-card-body !p-0">
+                        <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                          <h4 class="timeline-card-title text-sm font-bold text-cyan-300">${escapeHtml(job.title)}</h4>
+                          <span class="text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-40 text-cyan-300 rounded font-mono">${escapeHtml(period)}</span>
+                        </div>
+                        <div class="text-xs text-gray-300 font-semibold mb-1.5 flex items-center gap-1.5">
+                          <span class="text-cyan-400 font-mono text-[11px]">🏢</span>
+                          <span class="text-cyan-200">${escapeHtml(job.company)}</span>
+                        </div>
+                        <p class="timeline-card-desc text-xs text-gray-300 leading-relaxed">${escapeHtml(job.description)}</p>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         </div>
       `,
-      width: 680,
-      height: 480
+      width: Math.min(980, Math.max(820, Math.round(window.innerWidth * 0.65))),
+      height: Math.min(Math.max(620, Math.round(window.innerHeight * 0.82)), Math.max(580, Math.round(window.innerHeight * 0.72)))
     });
 
-    // Render ASCII portrait
-    const asciiTarget = win.element.querySelector('#ascii-target');
-    if (asciiTarget) {
-      asciiTarget.textContent = 'CONVERTING OPTICAL BUFFER...';
-      let avatarPath = profile?.operator?.avatar || 'data/img/operator.webp';
-      let asciiArt = await asciiRenderer.convertImage(avatarPath, 58);
-      if (asciiArt.startsWith('[ERROR') && avatarPath !== 'data/img/operator.example.webp') {
-        asciiArt = await asciiRenderer.convertImage('data/img/operator.example.webp', 58);
-      }
-      asciiTarget.textContent = asciiArt;
+    // Handle E-Mail click to open encrypted dispatch contact modal
+    const mailBtn = win.element.querySelector('.btn-open-contact');
+    if (mailBtn) {
+      mailBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        sound.playKeyClick();
+        this.openContactModal();
+      });
+    }
+
+    // Interactive 3D Parallax Tilt & Scanline effect on Overwatch Screen
+    const holoScreen = win.element.querySelector('.overwatch-screen');
+    const holoImg = win.element.querySelector('#hologram-avatar');
+    if (holoScreen && holoImg) {
+      holoScreen.addEventListener('mousemove', (e) => {
+        const rect = holoScreen.getBoundingClientRect();
+        const normX = (e.clientX - rect.left) / rect.width - 0.5;
+        const normY = (e.clientY - rect.top) / rect.height - 0.5;
+        holoImg.style.transform = `perspective(500px) rotateY(${normX * 14}deg) rotateX(${-normY * 14}deg) scale(1.03)`;
+      });
+      holoScreen.addEventListener('mouseleave', () => {
+        holoImg.style.transform = 'perspective(500px) rotateY(0deg) rotateX(0deg) scale(1)';
+      });
     }
   }
 
   // Open Radar Telemetry Window
   openRadarWindow() {
+    const existing = windowManager.getWindow('telemetry-radar');
+    if (existing) {
+      windowManager.restoreWindow('telemetry-radar');
+      windowManager.focusWindow('telemetry-radar');
+      return;
+    }
+
     const profile = dataLoader.getProfile();
     const skills = profile ? profile.radar_skills : [];
 
     let radarInstance = null;
 
+    const radarIcon = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9.5" stroke-width="1.8" /><circle cx="12" cy="12" r="4.8" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="1.5 1.5" /><path d="M12 12 L20.2 8.2 A 9.5 9.5 0 0 0 17.5 4.8 Z" fill="currentColor" fill-opacity="0.3" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><line x1="12" y1="12" x2="17.5" y2="4.8" stroke-width="1.8" stroke-linecap="round" /></svg>`;
+
     const win = windowManager.createWindow({
       id: 'telemetry-radar',
-      title: 'SEC//WIN: SKILL_RADAR_TELEMETRY',
+      title: 'SEC//WIN: SKILL_RADAR',
+      icon: radarIcon,
       contentHtml: `
-        <div class="flex flex-col items-center justify-center p-2">
-          <canvas id="radar-canvas" width="340" height="340" style="max-width: 100%; border-radius: 50%; border: 1px solid rgba(0,229,255,0.3); box-shadow: 0 0 16px rgba(0,229,255,0.2);"></canvas>
-          <div class="text-xs text-gray-400 font-mono mt-3 text-center">
-            TACTICAL 360° SKILL SCAN // SECTOR 0x7F
+        <div class="flex flex-col items-center justify-between p-2 h-full">
+          <canvas id="radar-canvas" width="840" height="700" style="max-width: 100%; height: auto; border: 1px solid rgba(0,229,255,0.25); background: rgba(2,6,23,0.75); box-shadow: 0 0 20px rgba(0,229,255,0.12); border-radius: 4px;"></canvas>
+          <div class="text-[11px] text-cyan-400 font-mono mt-2 text-center flex items-center justify-center gap-3">
+            <span>● TACTICAL 360° SKILL SCAN</span>
+            <span class="text-gray-500">//</span>
+            <span class="text-gray-300">SECTOR 0x7F</span>
+            <span class="text-gray-500">//</span>
+            <span class="text-emerald-400 font-bold">${skills.length} TARGETS LOCKED</span>
           </div>
         </div>
       `,
-      width: 420,
-      height: 460,
+      width: 900,
+      height: Math.min(840, Math.round(window.innerHeight * 0.88)),
       onClose: () => {
         if (radarInstance) radarInstance.destroy();
       }
@@ -790,12 +949,12 @@ class App {
             <button type="submit" id="btn-send-dispatch" class="w-full py-2.5 bg-cyan-500 bg-opacity-20 border border-cyan-400 hover:bg-opacity-40 text-cyan-300 font-bold text-xs tracking-wider uppercase rounded transition cursor-pointer">
               [ TRANSMIT DISPATCH // SENDEN ]
             </button>
+            <div id="contact-status" class="text-xs text-center font-mono empty:hidden pt-2"></div>
           </form>
-          <div id="contact-status" class="text-xs text-center font-mono min-h-[1.5em] mt-1"></div>
         </div>
       `,
       width: 520,
-      height: 560
+      height: 455
     });
 
     const form = document.getElementById('contact-form');

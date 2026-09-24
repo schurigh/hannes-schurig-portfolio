@@ -27,8 +27,14 @@ export class TerminalShell {
     this.windowId = windowId;
 
     // Authentication States: 'UNAUTH', 'LOGIN_USER', 'LOGIN_PASS', 'AUTHENTICATED'
-    this.authState = 'UNAUTH';
-    this.currentRole = 'guest'; // 'guest', 'user', 'admin'
+    const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+    if (isLocalhost) {
+      this.authState = 'AUTHENTICATED';
+      this.currentRole = 'admin';
+    } else {
+      this.authState = 'UNAUTH';
+      this.currentRole = 'guest'; // 'guest', 'user', 'admin'
+    }
     this.tempUsername = '';
     this.isMasked = false;
 
@@ -73,16 +79,25 @@ export class TerminalShell {
   }
 
   renderShell() {
+    const isAdmin = this.currentRole === 'admin';
+    const initialPrompt = isAdmin ? '[admin] &gt; ' : '&gt; ';
+
     this.container.innerHTML = `
-      <div class="terminal-container">
-        <div class="terminal-history" id="term-history">
+      <div class="terminal-container" style="position: relative; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column;">
+        <canvas class="terminal-matrix-rain-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0; transition: opacity 0.35s ease;"></canvas>
+        <div class="terminal-history" id="term-history" style="position: relative; z-index: 1; flex: 1; overflow-y: auto;">
           <div class="terminal-line output-info">SEC//OPS COMMAND SHELL [v4.19.0-CYBERDECK]</div>
-          <div class="terminal-line output-info">TYPE 'help' TO QUERY AVAILABLE DIRECTIVES.</div>
-          <div class="terminal-line output-info">TYPE 'login' OR 'auth' FOR SECURITY ELEVATION.</div>
+          ${isAdmin ? `
+            <div class="terminal-line output-warn">ENVIRONMENT: LOCALHOST // DEV MODE DETECTED</div>
+            <div class="terminal-line output-error">SECURITY CLEARANCE: ROOT OPERATOR [ADMIN ACCESS GRANTED]</div>
+          ` : `
+            <div class="terminal-line output-info">TYPE 'help' TO QUERY AVAILABLE DIRECTIVES.</div>
+            <div class="terminal-line output-info">TYPE 'login' OR 'auth' FOR SECURITY ELEVATION.</div>
+          `}
           <div class="terminal-line" style="color: #64748b;">--------------------------------------------------</div>
         </div>
-        <div class="terminal-input-row">
-          <span class="terminal-prompt" id="term-prompt">&gt; </span>
+        <div class="terminal-input-row" style="position: relative; z-index: 1;">
+          <span class="terminal-prompt" id="term-prompt">${initialPrompt}</span>
           <span class="terminal-command-display" id="term-display"></span>
           <span class="terminal-cursor" id="term-cursor"></span>
           <input type="text" class="terminal-hidden-input" id="term-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -94,6 +109,13 @@ export class TerminalShell {
     this.promptEl = this.container.querySelector('#term-prompt');
     this.displayEl = this.container.querySelector('#term-display');
     this.inputEl = this.container.querySelector('#term-input');
+    this.matrixCanvasEl = this.container.querySelector('.terminal-matrix-rain-canvas');
+
+    if (isAdmin) {
+      windowManager.setTheme(this.windowId, 'red');
+      const headerTitle = document.querySelector(`#win-${this.windowId} .win-title-text`);
+      if (headerTitle) headerTitle.textContent = 'SEC//WIN: TERMINAL [ROOT // ADMIN]';
+    }
   }
 
   setupListeners() {
@@ -310,12 +332,12 @@ export class TerminalShell {
       { cmd: 'add-content', desc: 'Flood workspace with classified intelligence files.' },
       { cmd: 'add-project', desc: 'Synthesize new experimental Skynet repository.' },
       { cmd: 'delete-content', desc: 'Purge active or specified project from registry.' },
-      { cmd: 'overclock', desc: 'Boost UI luminance and voltage by +50%.' },
-      { cmd: 'undervolt', desc: 'Lower system power draw to low-spec monochrome.' },
+      { cmd: 'power-overclock', desc: 'Boost UI luminance and voltage by +50%.' },
+      { cmd: 'power-undervolt', desc: 'Lower system power draw to low-spec monochrome.' },
+      { cmd: 'power-reset', desc: 'Reset power states and restore default cyan theme.' },
       { cmd: 'self-destruct', desc: 'Arm core meltdown countdown.' },
-      { cmd: 'matrix', desc: 'Execute 5s raw neural-kernel compile stream.' },
-      { cmd: 'change-color', desc: 'Cycle cyberpunk theme color palettes.' },
-      { cmd: 'change-theme', desc: 'Alias for change-color.' }
+      { cmd: 'matrix', desc: 'Stream 100 continuous lines with green matrix rain.' },
+      { cmd: 'change-color [CODE]', desc: 'Set theme palette (CYAN, AMBER, RED, GREEN, PURPLE, WHITE).' }
     ];
 
     if (this.authState === 'AUTHENTICATED' && this.currentRole === 'admin') {
@@ -327,7 +349,7 @@ export class TerminalShell {
   }
 
   executeCommand(command, args, fullArgString) {
-    const available = this.getAvailableCommands().map((c) => c.cmd);
+    const available = this.getAvailableCommands().map((c) => c.cmd.split(' ')[0]);
 
     // Permission check
     if (!available.includes(command)) {
@@ -341,7 +363,7 @@ export class TerminalShell {
       case 'help':
         this.printLine('--- AUTHORIZED SYSTEM DIRECTIVES ---', 'output-info');
         this.getAvailableCommands().forEach((c) => {
-          this.printLine(`  ${c.cmd.padEnd(16)} : ${c.desc}`);
+          this.printLine(`  ${c.cmd.padEnd(20)} : ${c.desc}`);
         });
         break;
 
@@ -445,27 +467,36 @@ export class TerminalShell {
         this.executeDeleteContent(args[0]);
         break;
 
+      case 'power-overclock':
       case 'overclock': {
         const res = windowManager.setOverclock(true);
         if (res.error) {
           this.printLine(res.error, 'output-warn');
           sound.playWarningBeep();
         } else {
-          this.printLine('OVERCLOCK ENGAGED: VOLTAGE BOOST +50% // LUMINANCE MAXIMIZED.', 'output-warn');
+          this.printLine('POWER OVERCLOCK ENGAGED: VOLTAGE BOOST +50% // LUMINANCE MAXIMIZED.', 'output-warn');
           sound.playAccessGranted();
         }
         break;
       }
 
+      case 'power-undervolt':
       case 'undervolt': {
         const res = windowManager.setUndervolt(true);
         if (res.error) {
           this.printLine(res.error, 'output-warn');
           sound.playWarningBeep();
         } else {
-          this.printLine('UNDERVOLT ENGAGED: LOW-POWER MODE // DESATURATION ACTIVE.', 'output-info');
+          this.printLine('POWER UNDERVOLT ENGAGED: LOW-POWER MODE // DESATURATION ACTIVE.', 'output-info');
           sound.playWarningBeep();
         }
+        break;
+      }
+
+      case 'power-reset': {
+        windowManager.resetPowerAndTheme();
+        this.printLine('POWER & THEME RESET: SYSTEM VOLTAGE NOMINAL // DEFAULT CYAN RESTORED.', 'output-success');
+        sound.playAccessGranted();
         break;
       }
 
@@ -477,10 +508,22 @@ export class TerminalShell {
         this.executeMatrixCompilation();
         break;
 
-      case 'change-color':
-      case 'change-theme': {
-        const newTheme = windowManager.cycleGlobalTheme();
-        this.printLine(`CYBERPUNK THEME PALETTE ROTATED TO: ${newTheme.toUpperCase()}`, 'output-info');
+      case 'change-color': {
+        const colorArg = (args[0] || '').trim().toLowerCase();
+        if (!colorArg) {
+          this.printLine("USAGE: change-color [CODE] (e.g. change-color AMBER)", 'output-warn');
+          this.printLine(`AVAILABLE CODES: ${windowManager.themes.map((t) => t.toUpperCase()).join(', ')}`, 'output-info');
+          sound.playWarningBeep();
+        } else {
+          const res = windowManager.setGlobalTheme(colorArg);
+          if (res.error) {
+            this.printLine(res.error, 'output-error');
+            sound.playAccessDenied();
+          } else {
+            this.printLine(`CYBERPUNK THEME PALETTE SET TO: [${res.theme.toUpperCase()}].`, 'output-success');
+            sound.playAccessGranted();
+          }
+        }
         break;
       }
     }
@@ -708,37 +751,153 @@ export class TerminalShell {
     }, 1000);
   }
 
-  // Rapid cmatrix stream
-  executeMatrixCompilation() {
-    const originalContent = this.historyEl.innerHTML;
-    this.historyEl.innerHTML = '';
-    this.inputEl.disabled = true;
+  // Green matrix rain animation on the terminal background canvas
+  startTerminalMatrixRain() {
+    if (!this.matrixCanvasEl) return () => {};
 
-    const dummyLines = [
-      '#include <secops/neural_kernel.h>',
-      'void main(int argc, char** argv) {',
-      '    init_quantum_gate(&q_bus, 0x7F);',
-      '    decrypt_stream(BUFFER_A, KEY_RSA_4096);',
-      '    for(int i=0; i<65536; i++) {',
-      '        inject_packet(SYNTH_VIBECODE);',
-      '    }',
-      '    return STATUS_SEC_OPTIMIZED;',
-      '}'
+    const canvas = this.matrixCanvasEl;
+    canvas.width = this.container.clientWidth || 600;
+    canvas.height = this.container.clientHeight || 400;
+    canvas.style.opacity = '0.35';
+
+    const ctx = canvas.getContext('2d');
+    const fontSize = 13;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = Math.floor(Math.random() * -30);
+    }
+
+    const chars = '0123456789ABCDEF010101日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ';
+    let running = true;
+    let animId = null;
+
+    const renderRain = () => {
+      if (!running) return;
+
+      // Dark translucent wash to create matrix rain trails
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.22)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = `${fontSize}px 'Oxanium', monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        if (y > 0) {
+          const r = Math.random();
+          if (r > 0.92) {
+            ctx.fillStyle = '#ffffff'; // White glowing lead glyph
+          } else if (r > 0.6) {
+            ctx.fillStyle = '#22c55e'; // Bright classic matrix green
+          } else {
+            ctx.fillStyle = '#15803d'; // Deep matrix green trail
+          }
+          ctx.fillText(char, x, y);
+        }
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+
+      animId = requestAnimationFrame(renderRain);
+    };
+
+    renderRain();
+
+    return () => {
+      running = false;
+      if (animId) cancelAnimationFrame(animId);
+      canvas.style.opacity = '0';
+      setTimeout(() => {
+        if (!running) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }, 400);
+    };
+  }
+
+  // Rapid live code stream from a random assets/js/* file (100 non-empty lines) with green matrix background rain
+  async executeMatrixCompilation() {
+    this.inputEl.disabled = true;
+    this.printLine('[MATRIX STREAM] SCANNING VIRTUAL KERNEL /assets/js/...', 'output-warn');
+    sound.playKeyClick();
+
+    // Start green matrix rain background in terminal window
+    const stopRain = this.startTerminalMatrixRain();
+
+    const jsFiles = [
+      'app.js',
+      'terminal.js',
+      'windowManager.js',
+      'radarCanvas.js',
+      'lightbox.js',
+      'sound.js',
+      'matrixCanvas.js',
+      'dataLoader.js'
     ];
 
-    let lineIdx = 0;
-    const streamInterval = setInterval(() => {
-      this.printLine(dummyLines[lineIdx % dummyLines.length], 'output-info');
-      lineIdx++;
-    }, 80);
+    const randomFile = jsFiles[Math.floor(Math.random() * jsFiles.length)];
+    let rawCode = '';
 
-    setTimeout(() => {
-      clearInterval(streamInterval);
-      this.historyEl.innerHTML = originalContent;
-      this.printLine('SYSTEM CORE RECOMPILED. NEURAL LINK STABILIZED.', 'output-success');
-      this.inputEl.disabled = false;
-      this.inputEl.focus();
-    }, 5000);
+    try {
+      const res = await fetch(`assets/js/${randomFile}?v=${Date.now()}`);
+      if (res.ok) {
+        rawCode = await res.text();
+      }
+    } catch (err) {
+      console.warn('Matrix code stream fetch failed, using runtime fallback', err);
+    }
+
+    if (!rawCode) {
+      rawCode = `// Fallback runtime stream for ${randomFile}\n` +
+        Array.from({ length: 120 }, (_, i) => `/* MODULE_SYNC_0x${(i * 17).toString(16)} */ const kernel_proc_${i} = { pid: 0x${Math.random().toString(16).slice(2, 6)}, status: 'ALLOCATED' };`).join('\n');
+    }
+
+    const allLines = rawCode.split(/\r?\n/);
+    // Filter out blank/empty lines so it becomes a solid continuous uninterrupted code block
+    const contentLines = allLines.filter((line) => line.trim().length > 0);
+    const totalLinesNeeded = 100;
+    let startLine = 0;
+
+    if (contentLines.length > totalLinesNeeded) {
+      startLine = Math.floor(Math.random() * (contentLines.length - totalLinesNeeded + 1));
+    }
+
+    let slice = contentLines.slice(startLine, startLine + totalLinesNeeded);
+    if (slice.length < totalLinesNeeded) {
+      let padIdx = 0;
+      while (slice.length < totalLinesNeeded && contentLines.length > 0) {
+        slice.push(contentLines[padIdx % contentLines.length]);
+        padIdx++;
+      }
+    }
+
+    this.printLine('================================================================', 'output-info');
+    this.printLine(`STREAMING 100 CODE LINES FROM: assets/js/${randomFile} [SOLID BLOCK]`, 'output-info');
+    this.printLine('================================================================', 'output-info');
+
+    let idx = 0;
+    const streamInterval = setInterval(() => {
+      if (idx < slice.length) {
+        const lineNum = String(idx + 1).padStart(3, '0');
+        const codeText = slice[idx];
+        this.printLine(`[${lineNum}/100] ${codeText}`, 'output-info');
+        idx++;
+      } else {
+        clearInterval(streamInterval);
+        stopRain(); // Stop and fade out green matrix rain from terminal window
+        this.printLine('================================================================', 'output-info');
+        this.printLine(`MATRIX DUMP COMPLETE: 100 CONTINUOUS LINES STREAMED FROM assets/js/${randomFile}`, 'output-success');
+        this.inputEl.disabled = false;
+        this.inputEl.focus();
+        sound.playAccessGranted();
+      }
+    }, 20);
   }
 
   // 5s Countdown Reboot

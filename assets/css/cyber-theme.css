@@ -379,6 +379,7 @@ html, body {
 .terminal-line {
   margin-bottom: 4px;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .terminal-line.output-info    { color: #38bdf8; }
@@ -1270,5 +1271,32 @@ html, body {
     font-size: 0.68rem;
     left: 0.25rem;
     right: 0.25rem;
+  }
+}
+
+/* Animated Cyber Pulse Dot */
+.cyber-pulse-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  min-height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent, #00e5ff);
+  box-shadow: 0 0 8px var(--accent, #00e5ff), 0 0 2px #ffffff;
+  animation: cyberDotPulse 1.6s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+@keyframes cyberDotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px var(--accent, #00e5ff), 0 0 2px #ffffff;
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.75);
+    box-shadow: 0 0 2px var(--accent, #00e5ff);
   }
 }

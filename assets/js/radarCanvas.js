@@ -68,12 +68,13 @@ export class RadarHUD {
     const height = this.canvas.height;
     const cx = width / 2;
     const cy = height / 2;
-    const radius = Math.min(cx, cy) - 24;
+    // Keep radius proportional, leaving generous lateral margins for badges
+    const radius = Math.min(cx, cy) - 125;
 
     this.ctx.clearRect(0, 0, width, height);
 
     // Background circle
-    this.ctx.fillStyle = 'rgba(4, 18, 36, 0.4)';
+    this.ctx.fillStyle = 'rgba(4, 18, 36, 0.45)';
     this.ctx.beginPath();
     this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     this.ctx.fill();
@@ -88,21 +89,29 @@ export class RadarHUD {
     });
 
     // Crosshairs
-    this.ctx.strokeStyle = 'rgba(0, 229, 255, 0.25)';
+    this.ctx.strokeStyle = 'rgba(0, 229, 255, 0.22)';
     this.ctx.beginPath();
-    this.ctx.moveTo(cx - radius, cy);
-    this.ctx.lineTo(cx + radius, cy);
-    this.ctx.moveTo(cx, cy - radius);
-    this.ctx.lineTo(cx, cy + radius);
+    this.ctx.moveTo(cx - radius - 10, cy);
+    this.ctx.lineTo(cx + radius + 10, cy);
+    this.ctx.moveTo(cx, cy - radius - 10);
+    this.ctx.lineTo(cx, cy + radius + 10);
     this.ctx.stroke();
 
     // Angle degree markings
-    this.ctx.font = "9px 'Oxanium', monospace";
+    this.ctx.font = "10px 'Oxanium', monospace";
     this.ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
-    this.ctx.fillText("000°", cx - 10, cy - radius + 12);
-    this.ctx.fillText("090°", cx + radius - 24, cy + 3);
-    this.ctx.fillText("180°", cx - 10, cy + radius - 4);
-    this.ctx.fillText("270°", cx - radius + 2, cy + 3);
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'bottom';
+    this.ctx.fillText("000°", cx, cy - radius - 5);
+    this.ctx.textBaseline = 'middle';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText("090°", cx + radius + 6, cy);
+    this.ctx.textBaseline = 'top';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText("180°", cx, cy + radius + 5);
+    this.ctx.textBaseline = 'middle';
+    this.ctx.textAlign = 'right';
+    this.ctx.fillText("270°", cx - radius - 6, cy);
 
     // Sweeping beam
     const sweepGradient = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
@@ -119,51 +128,164 @@ export class RadarHUD {
 
     // Sweep leading line
     this.ctx.strokeStyle = '#00e5ff';
-    this.ctx.lineWidth = 1.5;
+    this.ctx.lineWidth = 1.6;
     this.ctx.shadowColor = '#00e5ff';
-    this.ctx.shadowBlur = 6;
+    this.ctx.shadowBlur = 8;
     this.ctx.beginPath();
     this.ctx.moveTo(cx, cy);
     this.ctx.lineTo(cx + Math.cos(this.angle) * radius, cy + Math.sin(this.angle) * radius);
     this.ctx.stroke();
     this.ctx.restore();
 
-    // Draw Skill Target Blips
-    this.skills.forEach((skill) => {
+    // Prepare badge layout items
+    const padX = 7;
+    const padY = 4;
+    const badgeH = 15 + padY * 2;
+    this.ctx.font = "bold 11px 'Oxanium', monospace";
+
+    const items = this.skills.map((skill) => {
       const rad = (skill.angle * Math.PI) / 180;
       const dist = skill.level * radius;
       const bx = cx + Math.cos(rad) * dist;
       const by = cy + Math.sin(rad) * dist;
 
-      // Distance to sweep beam for illumination
       let angleDiff = Math.abs(this.angle - rad);
       if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
-      const isLit = angleDiff < 0.5;
+      const isLit = angleDiff < 0.45;
+
+      const percentStr = `${Math.round(skill.level * 100)}%`;
+      this.ctx.font = "bold 11px 'Oxanium', monospace";
+      const nameMetrics = this.ctx.measureText(skill.name);
+      const percentMetrics = this.ctx.measureText(` [${percentStr}]`);
+      const totalTextW = nameMetrics.width + percentMetrics.width;
+      const badgeW = totalTextW + padX * 2;
+
+      const cosA = Math.cos(rad);
+      const sinA = Math.sin(rad);
+
+      let badgeX = bx;
+      let badgeY = by - badgeH / 2;
+      let side = 'right';
+
+      if (sinA < -0.88) {
+        // Polar Top
+        side = 'top';
+        badgeX = bx - badgeW / 2;
+        badgeY = by - badgeH - 12;
+      } else if (sinA > 0.88) {
+        // Polar Bottom
+        side = 'bottom';
+        badgeX = bx - badgeW / 2;
+        badgeY = by + 12;
+      } else if (cosA >= 0) {
+        // Right side - project outward to the right
+        side = 'right';
+        badgeX = bx + 16;
+        badgeY = by - badgeH / 2;
+      } else {
+        // Left side - project outward to the left
+        side = 'left';
+        badgeX = bx - badgeW - 16;
+        badgeY = by - badgeH / 2;
+      }
+
+      return {
+        skill,
+        bx,
+        by,
+        rad,
+        isLit,
+        percentStr,
+        nameW: nameMetrics.width,
+        badgeW,
+        badgeH,
+        badgeX,
+        badgeY,
+        side
+      };
+    });
+
+    // Collision Separation Pass: Ensure badges on the same side do not overlap vertically
+    ['left', 'right'].forEach((side) => {
+      const sideItems = items.filter((it) => it.side === side);
+      if (sideItems.length <= 1) return;
+
+      sideItems.sort((a, b) => a.badgeY - b.badgeY);
+
+      const minGap = 8;
+      for (let i = 1; i < sideItems.length; i++) {
+        const prev = sideItems[i - 1];
+        const curr = sideItems[i];
+        const overlap = (prev.badgeY + prev.badgeH + minGap) - curr.badgeY;
+        if (overlap > 0) {
+          curr.badgeY += overlap;
+        }
+      }
+    });
+
+    // Clamp within canvas boundaries
+    items.forEach((item) => {
+      item.badgeX = Math.max(8, Math.min(width - item.badgeW - 8, item.badgeX));
+      item.badgeY = Math.max(8, Math.min(height - item.badgeH - 8, item.badgeY));
+    });
+
+    // Render Blips, Lines, and Badges
+    items.forEach((item) => {
+      const { skill, bx, by, isLit, percentStr, nameW, badgeW, badgeH, badgeX, badgeY } = item;
 
       this.ctx.save();
+
+      // Blip glow & dot
       this.ctx.fillStyle = isLit ? '#ffffff' : '#00e5ff';
       this.ctx.shadowColor = '#00e5ff';
-      this.ctx.shadowBlur = isLit ? 10 : 3;
+      this.ctx.shadowBlur = isLit ? 14 : 5;
 
-      // Blip circle
       this.ctx.beginPath();
-      this.ctx.arc(bx, by, isLit ? 4 : 2.5, 0, Math.PI * 2);
+      this.ctx.arc(bx, by, isLit ? 5 : 3.5, 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Blip ring
+      // Expanding pulse ring when swept
       if (isLit) {
-        this.ctx.strokeStyle = 'rgba(0, 229, 255, 0.8)';
-        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = 'rgba(0, 229, 255, 0.9)';
+        this.ctx.lineWidth = 1.4;
         this.ctx.beginPath();
-        this.ctx.arc(bx, by, 7, 0, Math.PI * 2);
+        this.ctx.arc(bx, by, 9, 0, Math.PI * 2);
         this.ctx.stroke();
       }
 
-      // Label
-      this.ctx.fillStyle = isLit ? '#ffffff' : 'rgba(226, 232, 240, 0.75)';
-      this.ctx.font = "10px 'Oxanium', monospace";
+      // Leader line with dog-leg / elbow
       this.ctx.shadowBlur = 0;
-      this.ctx.fillText(`${skill.name} (${Math.round(skill.level * 100)}%)`, bx + 8, by + 3);
+      this.ctx.strokeStyle = isLit ? 'rgba(0, 229, 255, 0.8)' : 'rgba(0, 229, 255, 0.35)';
+      this.ctx.lineWidth = 1;
+      this.ctx.beginPath();
+      this.ctx.moveTo(bx, by);
+
+      const connectX = (badgeX + badgeW / 2 > bx) ? badgeX : badgeX + badgeW;
+      const connectY = badgeY + badgeH / 2;
+      this.ctx.lineTo(connectX, connectY);
+      this.ctx.stroke();
+
+      // Badge Background
+      this.ctx.fillStyle = isLit ? 'rgba(4, 20, 42, 0.95)' : 'rgba(2, 6, 23, 0.9)';
+      this.ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+
+      // Badge Border with cyan glow
+      this.ctx.strokeStyle = isLit ? '#00e5ff' : 'rgba(0, 229, 255, 0.45)';
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+
+      // Skill Name
+      this.ctx.font = "11px 'Oxanium', monospace";
+      this.ctx.textBaseline = 'middle';
+      this.ctx.textAlign = 'left';
+      this.ctx.fillStyle = isLit ? '#ffffff' : '#f1f5f9';
+      this.ctx.fillText(skill.name, badgeX + padX, badgeY + badgeH / 2);
+
+      // Percentage in neon cyan
+      this.ctx.font = "bold 11px 'Oxanium', monospace";
+      this.ctx.fillStyle = isLit ? '#38bdf8' : '#00e5ff';
+      this.ctx.fillText(` [${percentStr}]`, badgeX + padX + nameW, badgeY + badgeH / 2);
+
       this.ctx.restore();
     });
   }
