@@ -29,7 +29,7 @@ class SoundEngine {
       if (!AudioContext) return;
       this.ctx = new AudioContext();
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.28, this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.56, this.ctx.currentTime);
       this.masterGain.connect(this.ctx.destination);
       this.initialized = true;
 
@@ -45,7 +45,7 @@ class SoundEngine {
     this.isMuted = !this.isMuted;
     localStorage.setItem('portfolio_audio_muted', this.isMuted ? 'true' : 'false');
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.28, this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.56, this.ctx.currentTime);
     }
     window.dispatchEvent(new CustomEvent('sound:mute-changed', { detail: { isMuted: this.isMuted } }));
     return this.isMuted;

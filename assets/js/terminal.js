@@ -10,6 +10,17 @@ import { windowManager } from './windowManager.js';
 import { matrixRain } from './matrixCanvas.js';
 import { dataLoader } from './dataLoader.js';
 
+/** Escape strings before inserting into innerHTML to prevent XSS. */
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export class TerminalShell {
   constructor(containerEl, windowId = 'terminal') {
     this.container = containerEl;
@@ -361,7 +372,7 @@ export class TerminalShell {
 
       case 'ls': {
         const projects = dataLoader.getProjects();
-        this.printLine(`VIRTUAL FS /content/projects/ [${projects.length} NODES]:`, 'output-info');
+        this.printLine(`VIRTUAL FS /data/projects/ [${projects.length} NODES]:`, 'output-info');
         projects.forEach((p) => {
           this.printLine(`  [DIR] ${p.slug.padEnd(24)} | ${p.status.padEnd(20)} | ${p.title}`);
         });
@@ -536,7 +547,7 @@ export class TerminalShell {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
         </div>
-        <div class="label">${item.name}</div>
+        <div class="label">${escapeHtml(item.name)}</div>
       `;
 
       shortcut.addEventListener('click', () => {
@@ -605,7 +616,7 @@ export class TerminalShell {
             highlight: "Experimentelle autonome System-Komponente.",
             tags: ["Skynet", "Toaster-OS", "AI", "Quantum"],
             features: ["Neural Override", "Lethal Precision", "Toast Verification"],
-            media: [{ type: "image", url: "assets/img/projects/placeholder.svg", caption: "Neural Toaster Flow" }],
+            media: [{ type: "image", url: "data/img/projects/placeholder.svg", caption: "Neural Toaster Flow" }],
             links: [{ label: "GitHub", url: "https://github.com" }],
             content: `### ${projectTitle}\n\nAutomatisch erzeugtes Experimentelles Repository aus den Skynet Labs.`
           });

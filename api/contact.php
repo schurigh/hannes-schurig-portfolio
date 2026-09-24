@@ -8,6 +8,14 @@
 
 // Start session for CSRF token & rate limiting
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
     session_start();
 }
 
@@ -139,9 +147,20 @@ if (empty($cleanSubject)) {
 }
 
 // 6. Recipient & System Configuration
-// Load private configuration (config.local.php) or fallback to environment variables
-$configFile = __DIR__ . '/../config.local.php';
-$config = file_exists($configFile) ? (require $configFile) : [];
+// Load private configuration (data/config.php) or fallback to data/config.example.php
+$configFile = null;
+foreach ([
+    __DIR__ . '/../data/config.php',
+    __DIR__ . '/../data/config.local.php',
+    __DIR__ . '/../config.php',
+    __DIR__ . '/../data/config.example.php'
+] as $candidate) {
+    if (file_exists($candidate)) {
+        $configFile = $candidate;
+        break;
+    }
+}
+$config = ($configFile && file_exists($configFile)) ? (require $configFile) : [];
 
 $recipient = getenv('PORTFOLIO_CONTACT_RECIPIENT') 
     ?: ($config['contact_recipient'] ?? 'contact@vibecoding.local');
@@ -192,7 +211,17 @@ $headers = [
 // 9. Dispatch Mail
 $mailSuccess = @mail($recipient, $mailSubject, $body, implode("\r\n", $headers));
 
-// 10. Update Rate Limit Timestamps
+if (!$mailSuccess) {
+    error_log('[CyberDeck Mailer] mail() failed for recipient: ' . $recipient . ' at ' . date('c'));
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Übertragungsfehler: Nachricht konnte nicht zugestellt werden. Bitte versuche es später erneut.'
+    ]);
+    exit;
+}
+
+// 10. Update Rate Limit Timestamps (only on success)
 $_SESSION['last_mail_timestamp'] = $now;
 @file_put_contents($rateFile, (string)$now);
 

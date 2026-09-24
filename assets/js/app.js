@@ -12,6 +12,21 @@ import { windowManager } from './windowManager.js';
 import { TerminalShell } from './terminal.js';
 import { RadarHUD } from './radarCanvas.js';
 import { asciiRenderer } from './asciiRenderer.js';
+import { lightboxViewer } from './lightbox.js';
+
+/**
+ * Escape user-supplied strings before inserting into innerHTML to prevent XSS.
+ * Only needed for data from external sources (JSON files, user input).
+ */
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 class App {
   constructor() {
@@ -71,7 +86,7 @@ class App {
       "MEMORY CHECK: 64TB NEURAL RAM .................... [OK]",
       "INITIALIZING CRYPTO SUBSYSTEM .................... [OK]",
       "PROBING QUANTUM BUS ADAPTERS .................... [OK]",
-      "LOADING VIRTUAL VFS: /content/projects .......... [OK]",
+      "LOADING VIRTUAL VFS: /data/projects .......... [OK]",
       "SECURITY POLICY: ZERO-TRUST PROTOCOL ENFORCED ... [OK]",
       "FIREWALL DAEMON: ACTIVE [STEALTH MODE] .......... [OK]",
       "ESTABLISHING SECURE WEBSOCKET UPLINK ............ [OK]",
@@ -119,7 +134,7 @@ class App {
   renderColdStartNotice() {
     windowManager.createWindow({
       id: 'onboarding-notice',
-      title: 'SEC//SYS: SYSTEM READY',
+      title: 'SEC//SYS: SYSTEM START',
       contentHtml: `
         <div style="font-family:'Oxanium',monospace; padding: 12px 6px;">
           <div style="color: #00e5ff; font-weight: 700; font-size: 15px; margin-bottom: 8px; letter-spacing: 1px;">WILLKOMMEN IM CYBERDECK</div>
@@ -262,11 +277,12 @@ class App {
       if (isMin) cls += ' is-minimized';
       btn.className = cls;
       btn.setAttribute('data-win-id', win.id);
-      btn.title = win.title;
+      const displayTitle = (win.title || '').replace(/^SEC\/\/[A-Z]+:\s*/i, '').trim();
+      btn.title = displayTitle;
 
       btn.innerHTML = `
         <span class="taskbar-item-icon">${win.icon || '▪'}</span>
-        <span class="taskbar-item-title">${win.title}</span>
+        <span class="taskbar-item-title">${escapeHtml(displayTitle)}</span>
       `;
 
       btn.addEventListener('click', (e) => {
@@ -389,39 +405,102 @@ class App {
     }
   }
 
-  // Open Projects Explorer Window
+  // Open Projects Explorer Window (Design 4: Circuit Timeline Stream)
   openProjectsExplorer() {
     const projects = dataLoader.getProjects();
-    const categories = Array.from(new Set(projects.map((p) => p.category)));
+
+    // Chronological order: 2025 at the top, going down to today (2026)
+    const sortedProjects = [...projects].sort((a, b) => {
+      const da = a.startDate || '0000-00';
+      const db = b.startDate || '0000-00';
+      return da.localeCompare(db);
+    });
+
+    // Group projects by year
+    const projects2025 = sortedProjects.filter((p) => (p.startDate || '').startsWith('2025'));
+    const projects2026 = sortedProjects.filter((p) => (p.startDate || '').startsWith('2026'));
+
+    const renderCard = (p) => {
+      const imgUrl = (p.media && p.media.length > 0)
+        ? (p.media[0].thumb || p.media[0].url)
+        : 'data/img/projects/placeholder.svg';
+
+      const monthName = (p.dateDisplay || '').split(' ')[0] || '';
+
+      return `
+        <div class="timeline-item" data-slug="${p.slug}">
+          <div class="timeline-connector">
+            <div class="timeline-node-dot"></div>
+            <div class="timeline-branch-line"></div>
+            <span class="timeline-branch-month">${escapeHtml(monthName)}</span>
+          </div>
+          <div class="timeline-card">
+            <div class="timeline-card-media">
+              <img src="${imgUrl}" alt="${escapeHtml(p.title)}" class="timeline-card-img" loading="lazy" />
+            </div>
+            <div class="timeline-card-body">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <h3 class="timeline-card-title">${escapeHtml(p.title)}</h3>
+                  <span class="text-[10px] px-2.5 py-0.5 border border-cyan-400 text-cyan-300 rounded font-mono">${escapeHtml(p.status)}</span>
+                </div>
+                <p class="timeline-card-desc">${escapeHtml(p.highlight || '')}</p>
+              </div>
+              <div class="flex items-center justify-end text-[11px] text-cyan-400 font-mono pt-1">
+                <span class="hover:underline flex items-center gap-1">[ PROJEKT ÖFFNEN ↗ ]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    };
 
     const contentHtml = `
-      <div class="flex flex-col md:flex-row h-full gap-4">
-        <!-- Sidebar -->
-        <div class="w-full md:w-48 flex-shrink-0 border-b md:border-b-0 md:border-r border-cyan-500 border-opacity-20 pr-3">
-          <div class="text-xs text-cyan-400 font-bold tracking-wider uppercase mb-3">Sektoren / Archive</div>
-          <div class="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0" id="explorer-filter-list">
-            <button class="filter-btn active text-left px-2 py-1 text-xs text-white bg-cyan-500 bg-opacity-20 border border-cyan-400 rounded" data-filter="all">Alle Projekte (${projects.length})</button>
-            ${categories.map((cat) => `
-              <button class="filter-btn text-left px-2 py-1 text-xs text-gray-300 hover:text-white hover:bg-cyan-500 hover:bg-opacity-10 rounded" data-filter="${cat}">${cat}</button>
-            `).join('')}
+      <div class="flex flex-col h-full overflow-hidden">
+        <!-- Top Toolbar / Anchor Navigation -->
+        <div class="flex items-center justify-between px-3 py-2 border-b border-cyan-500 border-opacity-25 bg-black bg-opacity-40 flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">CIRCUIT TIMELINE STREAM</span>
+            <span class="text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${sortedProjects.length} PROJEKTE</span>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-xs">
+            <span class="text-gray-400 text-[10px]">SPRUNG:</span>
+            <button class="year-jump-btn px-2 py-0.5 border border-cyan-400 text-cyan-300 bg-cyan-950 bg-opacity-40 hover:bg-opacity-80 rounded text-[11px] transition cursor-pointer" data-year="2025">2025 (${projects2025.length})</button>
+            <button class="year-jump-btn px-2 py-0.5 border border-cyan-400 text-cyan-300 bg-cyan-950 bg-opacity-40 hover:bg-opacity-80 rounded text-[11px] transition cursor-pointer" data-year="2026">2026 (${projects2026.length})</button>
           </div>
         </div>
 
-        <!-- Main Grid Area -->
-        <div class="flex-1 overflow-y-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="explorer-grid">
-            ${projects.map((p) => `
-              <div class="project-card p-3 border border-cyan-500 border-opacity-25 rounded bg-blue-950 bg-opacity-30 hover:border-cyan-400 hover:bg-opacity-50 transition cursor-pointer" data-slug="${p.slug}">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs text-cyan-400 font-bold">${p.title}</span>
-                  <span class="text-[10px] px-1.5 py-0.5 border border-cyan-400 text-cyan-300 rounded font-mono">${p.status}</span>
-                </div>
-                <div class="text-xs text-gray-300 mb-2 line-clamp-2">${p.highlight}</div>
-                <div class="flex flex-wrap gap-1">
-                  ${p.tags.map((t) => `<span class="text-[10px] bg-black bg-opacity-50 text-cyan-200 px-1.5 py-0.5 rounded font-mono">#${t}</span>`).join('')}
-                </div>
+        <!-- Scrollable Timeline Area -->
+        <div class="flex-1 overflow-y-auto timeline-scroll-area">
+          <div class="timeline-stream-wrapper">
+            <!-- Glowing vertical circuit bus line -->
+            <div class="timeline-circuit-bus"></div>
+
+            <!-- Milestone 2025 -->
+            <div class="timeline-year-milestone" id="year-2025">
+              <div class="timeline-year-badge">
+                <span>⚡</span>
+                <span>2025</span>
               </div>
-            `).join('')}
+              <div class="timeline-year-line"></div>
+              <span class="text-[10px] text-cyan-400 font-mono tracking-wider hidden sm:inline">// PROTOCOL INITIALIZATION</span>
+            </div>
+
+            <!-- 2025 Projects -->
+            ${projects2025.map((p) => renderCard(p)).join('')}
+
+            <!-- Milestone 2026 -->
+            <div class="timeline-year-milestone" id="year-2026">
+              <div class="timeline-year-badge">
+                <span>⚡</span>
+                <span>2026</span>
+              </div>
+              <div class="timeline-year-line"></div>
+              <span class="text-[10px] text-cyan-400 font-mono tracking-wider hidden sm:inline">// SYSTEM EXPANSION & HEUTE</span>
+            </div>
+
+            <!-- 2026 Projects -->
+            ${projects2026.map((p) => renderCard(p)).join('')}
           </div>
         </div>
       </div>
@@ -431,38 +510,33 @@ class App {
       id: 'projects-explorer',
       title: 'SEC//WIN: PROJECTS_EXPLORER',
       contentHtml,
-      width: 760,
-      height: 480
+      width: 900,
+      height: 600
     });
 
-    // Attach interaction to project cards
-    const cards = win.element.querySelectorAll('.project-card');
+    // Attach click events on each timeline card to open project details
+    const cards = win.element.querySelectorAll('.timeline-card');
     cards.forEach((card) => {
       card.addEventListener('click', () => {
-        const slug = card.dataset.slug;
-        this.openProjectDetail(slug);
+        const item = card.closest('.timeline-item');
+        const slug = item?.dataset.slug;
+        if (slug) {
+          sound.playKeyClick();
+          this.openProjectDetail(slug);
+        }
       });
     });
 
-    // Filter interaction
-    const filterBtns = win.element.querySelectorAll('.filter-btn');
-    filterBtns.forEach((btn) => {
+    // Year Jump Buttons
+    const jumpBtns = win.element.querySelectorAll('.year-jump-btn');
+    jumpBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        filterBtns.forEach((b) => {
-          b.className = 'filter-btn text-left px-2 py-1 text-xs text-gray-300 hover:text-white hover:bg-cyan-500 hover:bg-opacity-10 rounded';
-        });
-        btn.className = 'filter-btn active text-left px-2 py-1 text-xs text-white bg-cyan-500 bg-opacity-20 border border-cyan-400 rounded';
-
-        const filter = btn.dataset.filter;
-        cards.forEach((card) => {
-          const proj = dataLoader.getProjectBySlug(card.dataset.slug);
-          if (filter === 'all' || (proj && proj.category === filter)) {
-            card.style.display = 'block';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-        sound.playKeyClick();
+        const targetYear = btn.dataset.year;
+        const targetEl = win.element.querySelector(`#year-${targetYear}`);
+        if (targetEl) {
+          sound.playKeyClick();
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     });
   }
@@ -480,17 +554,26 @@ class App {
         <div class="border border-cyan-500 border-opacity-30 p-3 rounded bg-black bg-opacity-40">
           <div class="flex flex-col sm:flex-row gap-4 items-start">
             ${project.media && project.media.length > 0 ? `
-              <div class="w-full sm:w-60 flex-shrink-0">
-                <img src="${project.media[0].url}" alt="${project.title}" class="w-full h-auto rounded border border-cyan-500 border-opacity-20" />
-                <div class="text-[10px] text-gray-400 font-mono mt-1">${project.media[0].caption || ''}</div>
+              <div class="w-full sm:w-64 flex-shrink-0">
+                <div class="project-hero-thumb group relative rounded border border-cyan-500 border-opacity-30 hover:border-cyan-400 transition cursor-pointer overflow-hidden bg-black bg-opacity-50" data-media-idx="0">
+                  <img src="${project.media[0].thumb || project.media[0].url}" alt="${escapeHtml(project.title)}" class="w-full h-auto object-cover group-hover:scale-105 transition duration-300" />
+                  <div class="absolute inset-0 bg-cyan-950 bg-opacity-0 group-hover:bg-opacity-50 transition flex items-center justify-center">
+                    <span class="opacity-0 group-hover:opacity-100 transition text-xs text-cyan-200 font-mono bg-black bg-opacity-80 px-2.5 py-1 rounded border border-cyan-400 flex items-center gap-1">
+                      <span>🔍</span>
+                      <span>Galerie öffnen (${project.media.length})</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="text-[10px] text-gray-400 font-mono mt-1 text-center">${escapeHtml(project.media[0].caption || '')}</div>
               </div>
             ` : ''}
             <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2">
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
                 <h2 class="text-lg font-bold text-cyan-400">${project.title}</h2>
+                ${project.dateDisplay ? `<span class="text-xs px-2 py-0.5 bg-cyan-950 text-cyan-200 border border-cyan-500 border-opacity-30 rounded font-mono">${project.dateDisplay}</span>` : ''}
                 <span class="text-xs px-2 py-0.5 border border-cyan-400 text-cyan-300 rounded font-mono">${project.status}</span>
               </div>
-              <p class="text-sm text-gray-200 mb-3">${project.highlight}</p>
+              <p class="text-sm text-gray-200 mb-3 leading-relaxed">${project.highlight}</p>
               
               <div class="text-xs font-bold text-cyan-300 mb-1">FEATURES // HIGHLIGHTS:</div>
               <ul class="list-disc list-inside text-xs text-gray-300 space-y-1 mb-3">
@@ -509,6 +592,34 @@ class App {
           </div>
         </div>
 
+        <!-- Screenshots / Lightbox Gallery -->
+        ${project.media && project.media.length > 1 ? `
+          <div class="border border-cyan-500 border-opacity-30 p-3 rounded bg-black bg-opacity-40">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="text-xs text-cyan-400 font-bold font-mono tracking-wider flex items-center gap-2">
+                <span>📸 SCREENSHOTS // GALERIE</span>
+                <span class="text-[10px] text-cyan-300 font-mono px-1.5 py-0.2 border border-cyan-500 border-opacity-30 rounded">${project.media.length} BILDER</span>
+              </div>
+              <span class="text-[10px] text-gray-400 font-mono">[ KLICKEN ZUR GROßANSICHT ]</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              ${project.media.map((item, idx) => `
+                <div class="project-thumb-card group relative border border-cyan-500 border-opacity-25 hover:border-cyan-400 rounded overflow-hidden cursor-pointer transition bg-black bg-opacity-60" data-media-idx="${idx}">
+                  <div class="aspect-video w-full overflow-hidden flex items-center justify-center bg-gray-950">
+                    <img src="${item.thumb || item.url}" alt="${escapeHtml(item.caption || project.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                  </div>
+                  <div class="absolute inset-0 bg-cyan-950 bg-opacity-0 group-hover:bg-opacity-50 transition flex items-center justify-center">
+                    <span class="opacity-0 group-hover:opacity-100 transition text-[11px] text-cyan-200 font-mono bg-black bg-opacity-80 px-2 py-0.5 rounded border border-cyan-400">🔍 Großansicht</span>
+                  </div>
+                  ${item.caption ? `
+                    <div class="p-1.5 text-[10px] text-gray-400 font-mono truncate" title="${escapeHtml(item.caption)}">${escapeHtml(item.caption)}</div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
         <!-- Markdown Body -->
         <div class="markdown-body border-t border-cyan-500 border-opacity-20 pt-3">
           ${parsedMarkdown}
@@ -516,12 +627,21 @@ class App {
       </div>
     `;
 
-    windowManager.createWindow({
+    const win = windowManager.createWindow({
       id: `proj-${slug}`,
       title: `SEC//PROJ: ${project.title.toUpperCase()}`,
       contentHtml,
-      width: 720,
-      height: 500
+      width: 760,
+      height: 520
+    });
+
+    // Attach click events to all gallery thumbnails to open Lightbox
+    const allThumbTriggers = win.element.querySelectorAll('.project-hero-thumb, .project-thumb-card');
+    allThumbTriggers.forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        const idx = parseInt(trigger.dataset.mediaIdx || '0', 10);
+        lightboxViewer.open(project.media, idx, project.title);
+      });
     });
   }
 
@@ -538,7 +658,7 @@ class App {
             <!-- Left: ASCII Portrait Canvas -->
             <div class="w-full md:w-64 flex-shrink-0 flex flex-col items-center border border-cyan-500 border-opacity-25 p-2 rounded bg-black bg-opacity-50">
               <div class="text-[11px] text-cyan-400 font-mono tracking-wider mb-2">LIVE ASCII STREAM</div>
-              <pre id="ascii-target" style="font-family:'Oxanium',monospace; font-size:6.5px; line-height:1; color:#00e5ff; overflow:hidden;"></pre>
+              <pre id="ascii-target" style="font-family:'Consolas','Courier New','Lucida Console',monospace; font-size:6.6px; line-height:1; letter-spacing:0; color:#00e5ff; overflow:hidden; margin:0 auto; text-align:center;"></pre>
             </div>
 
             <!-- Right: Bio & Telemetry -->
@@ -585,8 +705,11 @@ class App {
     const asciiTarget = win.element.querySelector('#ascii-target');
     if (asciiTarget) {
       asciiTarget.textContent = 'CONVERTING OPTICAL BUFFER...';
-      const avatarPath = profile?.operator?.avatar || 'assets/img/me.webp';
-      const asciiArt = await asciiRenderer.convertImage(avatarPath, 60);
+      let avatarPath = profile?.operator?.avatar || 'data/img/operator.webp';
+      let asciiArt = await asciiRenderer.convertImage(avatarPath, 58);
+      if (asciiArt.startsWith('[ERROR') && avatarPath !== 'data/img/operator.example.webp') {
+        asciiArt = await asciiRenderer.convertImage('data/img/operator.example.webp', 58);
+      }
       asciiTarget.textContent = asciiArt;
     }
   }

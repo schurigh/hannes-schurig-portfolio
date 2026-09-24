@@ -15,23 +15,47 @@ class DataLoader {
   async init() {
     if (this.loaded) return;
     try {
-      // Check for private profile override (profile.local.json is ignored by git)
-      let profileRes = await fetch('content/profile.local.json').catch(() => null);
-      if (!profileRes || !profileRes.ok) {
-        profileRes = await fetch('content/profile.json');
+      const profileMeta = document.querySelector('meta[name="profile-source"]')?.getAttribute('content');
+      const profileSrc = profileMeta || 'data/profile.json';
+
+      const projectsMeta = document.querySelector('meta[name="projects-source"]')?.getAttribute('content');
+      const projectsSrc = projectsMeta || 'data/projects.json';
+
+      let [profileRes, projectsRes] = await Promise.all([
+        fetch(profileSrc),
+        fetch(projectsSrc)
+      ]);
+
+      // Graceful fallback to example files if local files were not found
+      if (!profileRes.ok && profileSrc !== 'data/profile.example.json') {
+        profileRes = await fetch('data/profile.example.json');
+      }
+      if (!projectsRes.ok && projectsSrc !== 'data/projects.example.json') {
+        projectsRes = await fetch('data/projects.example.json');
       }
 
-      const projectsRes = await fetch('content/projects.json');
-
-      if (profileRes && profileRes.ok) {
+      if (profileRes.ok) {
         this.profile = await profileRes.json();
+        if (this.profile?.operator?.avatar) {
+          this.profile.operator.avatar = this.profile.operator.avatar.replace(/^assets\/img\//, 'data/img/');
+        }
       }
-      if (projectsRes && projectsRes.ok) {
-        this.projects = await projectsRes.json();
+      if (projectsRes.ok) {
+        const rawProjects = await projectsRes.json();
+        this.projects = rawProjects.map((p) => {
+          if (p.media && Array.isArray(p.media)) {
+            p.media = p.media.map((m) => ({
+              ...m,
+              url: m.url ? m.url.replace(/^assets\/img\/projects\//, 'data/img/projects/') : m.url,
+              thumb: m.thumb ? m.thumb.replace(/^assets\/img\/projects\//, 'data/img/projects/') : m.thumb
+            }));
+          }
+          return p;
+        });
       }
       this.loaded = true;
     } catch (e) {
-      console.error('Error loading flat-file content:', e);
+      console.error('Error loading flat-file data:', e);
     }
   }
 

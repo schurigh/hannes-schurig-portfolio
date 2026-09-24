@@ -1,11 +1,21 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
     session_start();
 }
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrfToken = htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8');
+$profileFile = file_exists(__DIR__ . '/data/profile.json') ? 'data/profile.json' : 'data/profile.example.json';
+$projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.json' : 'data/projects.example.json';
 ?>
 <!DOCTYPE html>
 <html lang="de" class="theme-cyan">
@@ -18,6 +28,8 @@ $csrfToken = htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8');
   <meta name="description" content="Interaktives CyberDeck Portfolio OS & Command Center. Vibecoding, AI Orchestration & Creative Engineering.">
   <meta name="theme-color" content="#030712">
   <meta name="csrf-token" content="<?= $csrfToken ?>">
+  <meta name="profile-source" content="<?= $profileFile ?>">
+  <meta name="projects-source" content="<?= $projectsFile ?>">
   <meta property="og:title" content="CyberDeck // SecOps-UI Portfolio">
   <meta property="og:description" content="Interaktives Cyber-War-Room Portfolio im Terminal- und Fake-OS-Stil.">
   <meta property="og:type" content="website">

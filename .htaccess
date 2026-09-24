@@ -8,13 +8,58 @@ AddCharset UTF-8 .html .css .js .json .xml
 
 # 2. Security Headers
 <IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Prevent clickjacking (DENY = no framing at all)
+    Header always set X-Frame-Options "DENY"
+
+    # XSS protection for legacy browsers
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Hide PHP version
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+
+    # HTTP Strict Transport Security (1 year, activated on HTTPS)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # Permissions Policy: disable unnecessary browser APIs
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+    # Content Security Policy
+    # script-src 'unsafe-inline' required for inline event handlers in terminal/boot sequence
+    # style-src 'unsafe-inline' required for Tailwind utility + inline styles
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
 </IfModule>
 
-# 3. Compression (Gzip / Deflate)
+# 3. Block access to internal planning directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^intern(/.*)?$ - [F,L]
+</IfModule>
+
+# 4. Block direct browser access to sensitive configuration files
+<FilesMatch "^(config\.php|config\.example\.php|\.env)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 5. Block .git, .env, log and other sensitive dotfiles
+<FilesMatch "^(\.(git|env|htpasswd|DS_Store)|.*\.log|composer\.lock)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 6. Compression (Gzip / Deflate)
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/plain
     AddOutputFilterByType DEFLATE text/html
@@ -30,7 +75,7 @@ AddCharset UTF-8 .html .css .js .json .xml
     AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
 
-# 4. Browser Caching
+# 7. Browser Caching
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresByType image/jpg "access plus 1 month"
@@ -44,5 +89,5 @@ AddCharset UTF-8 .html .css .js .json .xml
     ExpiresByType application/json "access plus 0 seconds"
 </IfModule>
 
-# 5. Disable Directory Browsing
+# 8. Disable Directory Browsing
 Options -Indexes

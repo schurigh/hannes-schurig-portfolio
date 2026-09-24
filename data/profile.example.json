@@ -1,0 +1,30 @@
+{
+  "operator": {
+    "callsign": "OPERATOR//ZERO",
+    "name": "Alex Mercer (CyberDeck Operator)",
+    "role": "Fullstack Architect & Creative Technologist",
+    "clearance": "ROOT / LEVEL 5",
+    "location": "GRID//NODE - CyberDeck Terminal",
+    "status": "ONLINE // READY FOR OPS"
+  },
+  "bio": "Software-Entwickler und digitaler Architekt. Fokus auf moderne Web-Technologien, intuitive Interfaces und kreatives Frontend-Engineering. Spezialisiert auf performante UIs, schlanke Architekturen und interaktive Browser-Erlebnisse.",
+  "telemetry": {
+    "uptime": "99.99%",
+    "deployments": "50+",
+    "neural_sync": "SYNCHRONIZED",
+    "coffee_intake": "NOMINAL"
+  },
+  "radar_skills": [
+    { "name": "Fullstack JS/TS", "angle": 30, "level": 0.92 },
+    { "name": "Frontend Architecture", "angle": 90, "level": 0.90 },
+    { "name": "Web Audio & Canvas", "angle": 150, "level": 0.85 },
+    { "name": "Rapid Prototyping", "angle": 210, "level": 0.88 },
+    { "name": "DevOps & Cloud", "angle": 270, "level": 0.82 },
+    { "name": "UI / UX Design", "angle": 330, "level": 0.90 }
+  ],
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/example", "icon": "github" },
+    { "label": "LinkedIn", "url": "https://linkedin.com/in/example", "icon": "linkedin" },
+    { "label": "E-Mail", "url": "mailto:operator@example.com", "icon": "mail" }
+  ]
+}

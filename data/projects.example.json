@@ -1,0 +1,146 @@
+[
+  {
+    "slug": "cyber-matrix-shell",
+    "title": "Cyber Matrix Terminal",
+    "category": "System Shell / UI",
+    "status": "LIVE // FINAL",
+    "startDate": "2025-10",
+    "dateDisplay": "Oktober 2025",
+    "highlight": "Interaktive Terminal-Emulation im Retro-Cyberpunk-Stil mit Web Audio API Soundeffekten und CRT-Simulation.",
+    "tags": [
+      "Vanilla JS",
+      "Web Audio",
+      "Canvas API",
+      "Terminal"
+    ],
+    "features": [
+      "Synthesizer-Tastaturklicks via Web Audio API",
+      "CRT-Scanlines und Matrix-Regen Animation",
+      "Befehlsparser mit Tab-Autovervollständigung"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "data/img/projects/cyber-matrix-shell.example.webp",
+        "thumb": "data/img/projects/cyber-matrix-shell.example.webp",
+        "caption": "Terminal Architecture Preview"
+      }
+    ],
+    "links": [
+      {
+        "label": "Repository",
+        "url": "https://github.com/example",
+        "type": "github"
+      }
+    ],
+    "content": "### Cyber Matrix Terminal\n\nEin interaktives Terminal im Retro-Cyberpunk-Stil. Entwickelt nach dem Prinzip der Zero-Dependency-Architektur mit nativer Web Audio API Sound-Synthese und animierter Canvas-Röhrenmonitor-Simulation."
+  },
+  {
+    "slug": "neural-flow-simulator",
+    "title": "Neural Flow Simulator",
+    "category": "Simulation / WebGL",
+    "status": "LIVE // BETA",
+    "startDate": "2025-12",
+    "dateDisplay": "Dezember 2025",
+    "highlight": "Echtzeit-Visualisierung neuronaler Datenströme und Multi-Agenten-Pfade im interaktiven Canvas-Grid.",
+    "tags": [
+      "Simulation",
+      "WebGL",
+      "TypeScript",
+      "Canvas"
+    ],
+    "features": [
+      "Partikel-Physik mit dynamischer Dämpfung",
+      "Dynamische Netzwerktopologie-Generierung",
+      "Interaktive Parametersteuerung via HUD"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "data/img/projects/neural-flow-simulator.example.webp",
+        "thumb": "data/img/projects/neural-flow-simulator.example.webp",
+        "caption": "Neural Flow Simulation Grid"
+      }
+    ],
+    "links": [
+      {
+        "label": "Repository",
+        "url": "https://github.com/example",
+        "type": "github"
+      }
+    ],
+    "content": "### Neural Flow Simulator\n\nEine experimentelle Simulation zur Darstellung autonomer Datenströme und Agenten-Pfade im Raum."
+  },
+  {
+    "slug": "smart-vault-manager",
+    "title": "Smart Vault Manager",
+    "category": "Web Application",
+    "status": "LIVE // PROD",
+    "startDate": "2026-03",
+    "dateDisplay": "März 2026",
+    "highlight": "Clientseitig verschlüsselte PWA zur sicheren Verwaltung lokaler Notizen und Konfigurations-Snippets.",
+    "tags": [
+      "PWA",
+      "WebCrypto",
+      "IndexedDB",
+      "Tailwind CSS"
+    ],
+    "features": [
+      "Ende-zu-Ende-Verschlüsselung direkt im Browser",
+      "Offline-First Architektur via Service Worker",
+      "Export als verschlüsseltes JSON-Backup"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "data/img/projects/smart-vault-manager.example.webp",
+        "thumb": "data/img/projects/smart-vault-manager.example.webp",
+        "caption": "Vault Dashboard Interface"
+      }
+    ],
+    "links": [
+      {
+        "label": "Demo",
+        "url": "https://example.com",
+        "type": "demo"
+      }
+    ],
+    "content": "### Smart Vault Manager\n\nEin minimalistischer, lokaler Datensafe für Konfigurationen und sensible Snippets. Alle Daten verbleiben verschlüsselt im Browser."
+  },
+  {
+    "slug": "holodash-telemetry",
+    "title": "HoloDash Telemetry",
+    "category": "Dashboard / IoT",
+    "status": "PROD // WIP",
+    "startDate": "2026-07",
+    "dateDisplay": "Juli 2026",
+    "highlight": "Modulares Überwachungs-Dashboard für Systemmetriken, Latenz-Telemetrie und Umgebungssensoren.",
+    "tags": [
+      "Dashboard",
+      "WebSocket",
+      "Realtime",
+      "Tailwind CSS"
+    ],
+    "features": [
+      "Echtzeitübertragung via WebSockets",
+      "Anpassbare Widget-Raster mit Drag & Drop",
+      "Akustische Alert-Schwellenwerte"
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "data/img/projects/holodash-telemetry.example.webp",
+        "thumb": "data/img/projects/holodash-telemetry.example.webp",
+        "caption": "HoloDash Monitoring Stream"
+      }
+    ],
+    "links": [
+      {
+        "label": "Repository",
+        "url": "https://github.com/example",
+        "type": "github"
+      }
+    ],
+    "content": "### HoloDash Telemetry\n\nEin modulares HUD-Dashboard für Echtzeit-Monitoring und Sensor-Telemetrie im modernen Cyber-Look."
+  }
+]

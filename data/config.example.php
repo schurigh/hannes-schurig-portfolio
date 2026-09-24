@@ -3,8 +3,8 @@
  * ============================================================
  * CYBERDECK PORTFOLIO - Configuration Blueprint / Blueprint
  * ============================================================
- * Copy this file to 'config.local.php' to configure private parameters.
- * 'config.local.php' is included in .gitignore and will NEVER be committed to Git.
+ * Copy this file to 'data/config.php' to configure private parameters.
+ * 'data/config.php' is included in .gitignore and will NEVER be committed to Git.
  */
 
 return [

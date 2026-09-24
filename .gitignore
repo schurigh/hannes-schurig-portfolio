@@ -2,14 +2,21 @@
 # CYBERDECK PORTFOLIO - Git Ignore Rules
 # ============================================================
 
-# Private local configuration (Contains recipient email & secrets)
-config.local.php
+# Private personal project data, configuration & media (excluded from GitHub)
+data/config.php
+data/profile.json
+data/projects.json
+# Ignore private media in data/img/, allow example media
+data/img/**
+!data/img/**/
+!data/img/**/*example*
+config.php
 .env
 .env.local
 
-# Private local profile & project overrides
-content/*.local.json
-content/profile.local.json
+# Optional local overrides
+data/*.local.*
+*.local.*
 
 # Internal planning documents & concepts
 /intern/
@@ -17,6 +24,7 @@ content/profile.local.json
 # Optional private avatar overrides
 assets/img/*.local.*
 assets/img/*.private.*
+assets/img/portrait.jpg
 
 # Temporary cache & logs
 cache/
