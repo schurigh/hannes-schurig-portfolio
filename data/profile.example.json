@@ -23,6 +23,25 @@
     { "name": "DevOps & Cloud", "angle": 270, "level": 0.82 },
     { "name": "UI / UX Design", "angle": 330, "level": 0.90 }
   ],
+  "skills": [
+    "TypeScript / JavaScript / Node.js",
+    "React / Next.js / Vue / Tailwind CSS",
+    "Micro-Frontends & System Architecture",
+    "WebSockets & Realtime Streaming APIs",
+    "Docker / CI/CD / GitHub Actions",
+    "SQL / PostgreSQL / MongoDB",
+    "UI / UX Design Systems & Prototyping",
+    "Agile / Scrum / Team Lead & Mentoring"
+  ],
+  "attachments": [
+    {
+      "title": "Zertifikate & Nachweise",
+      "file": "data/files/example_cert.pdf",
+      "type": "PDF",
+      "size": "1.2 MB",
+      "desc": "Übersicht über relevante Zertifizierungen und Qualifikationsnachweise"
+    }
+  ],
   "links": [
     { "label": "GitHub", "url": "https://github.com/example", "icon": "github" },
     { "label": "LinkedIn", "url": "https://linkedin.com/in/example", "icon": "linkedin" },
@@ -34,35 +53,42 @@
       "endDate": "heute",
       "title": "Principal Systems Engineer",
       "company": "Nexus Cybernetics",
-      "description": "Architektur verteilter Micro-Frontends und Integration KI-gestützter Observability-Pipelines."
+      "description": "• Leitung der Architektur verteilter Micro-Frontends und Integration moderner Observability-Pipelines.\n• Entwicklung resilienter Backend-Konnektoren und Evaluierung innovativer UI-Patterns.",
+      "attachments": [
+        {
+          "title": "Projektbestätigung",
+          "file": "data/files/example_ref.pdf",
+          "type": "PDF"
+        }
+      ]
     },
     {
       "startDate": "2021-06",
       "endDate": "2023-12",
       "title": "Senior Frontend Architect",
       "company": "Vortex Interactive",
-      "description": "Entwicklung modularer UI-Komponentenbibliotheken und Realtime-Dashboards mit WebSockets."
+      "description": "• Entwicklung modularer UI-Komponentenbibliotheken und Realtime-Dashboards mit WebSockets.\n• Optimierung der Client-Side Performance und Barrierefreiheit nach WCAG 2.1 AA."
     },
     {
       "startDate": "2018-03",
       "endDate": "2021-05",
       "title": "Fullstack Software Developer",
       "company": "Aether Dynamics",
-      "description": "Entwurf und Bereitstellung skalierbarer REST-Services sowie interaktiver Web-Frontends."
+      "description": "• Entwurf und Bereitstellung skalierbarer REST-Services sowie interaktiver Web-Frontends.\n• Implementierung automatisierter Test-Suiten und Continuous Deployment Workflows."
     },
     {
       "startDate": "2015-08",
       "endDate": "2018-02",
       "title": "UI / UX Engineer",
       "company": "Synthetix Labs",
-      "description": "Entwicklung barrierefreier Designsysteme und browserbasierter Prototypen."
+      "description": "• Entwicklung konsistenter Designsysteme und browserbasierter Prototypen.\n• Zusammenarbeit mit Produktteams zur Konzeption intuitiver User Flows."
     },
     {
       "startDate": "2013-10",
       "endDate": "2015-07",
       "title": "Junior Web Developer",
       "company": "NovaTech Solutions",
-      "description": "Umsetzung responsiver Web-Layouts und Pflege bestehender Datenbankstrukturen."
+      "description": "• Umsetzung responsiver Web-Layouts und Pflege bestehender Datenbankstrukturen.\n• Durchführung technischer Wartungsarbeiten und Browser-Kompatibilitätstests."
     }
   ]
 }

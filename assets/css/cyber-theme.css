@@ -133,21 +133,9 @@ html, body {
   pointer-events: none;
 }
 
-/* Scanline Subgrid Overlay - clean CRT line without chromatic aberration */
+/* Scanline Subgrid Overlay - disabled for clean, 100% uniform solid background */
 .scanlines-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    rgba(0, 0, 0, 0) 50%, 
-    rgba(0, 0, 0, 0.32) 50%
-  );
-  background-size: 100% 3px;
-  opacity: 0.45;
+  display: none;
 }
 
 /* Desktop Work Area */
@@ -607,6 +595,121 @@ html, body {
   color: var(--accent);
   padding: 0 4px;
   white-space: nowrap;
+}
+
+.dock-tray-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.dock-info-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dock-tray-info-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dock-tray-info-btn:hover,
+.dock-tray-info-btn.active {
+  background: rgba(var(--accent-rgb), 0.2);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.25);
+}
+
+.dock-info-overlay {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  right: 0;
+  width: min(440px, calc(100vw - 32px));
+  background: rgba(10, 15, 24, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  z-index: 10001;
+  animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-info-overlay.hidden {
+  display: none !important;
+}
+
+.dock-info-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.dock-info-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.dock-info-close-btn:hover {
+  color: #ff5555;
+  background: rgba(255, 85, 85, 0.15);
+}
+
+.dock-info-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 4px;
+  color: #38bdf8;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.dock-info-github-link:hover {
+  background: rgba(0, 229, 255, 0.22);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+@media (max-width: 639px) {
+  .dock-tray-info-btn span {
+    display: none;
+  }
+  .dock-info-overlay {
+    right: -10px;
+    width: min(340px, calc(100vw - 24px));
+  }
 }
 
 /* 7. Offshore Wire Transfer HUD Banner */
@@ -1300,3 +1403,110 @@ html, body {
     box-shadow: 0 0 2px var(--accent, #00e5ff);
   }
 }
+
+/* Operator Dossier: Unclamped timeline descriptions, Skills & Attachments */
+.operator-timeline-card-desc {
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0.5rem 0 0.5rem 0;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  white-space: pre-line;
+}
+
+.operator-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: #a5f3fc;
+  transition: all 0.2s ease;
+  line-height: 1.3;
+}
+
+.operator-skill-chip:hover {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: rgba(0, 229, 255, 0.55);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.operator-attachment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.operator-attachment-card:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+  transform: translateX(2px);
+}
+
+.operator-attachment-card .att-title {
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-cyber);
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.operator-attachment-card:hover .att-title {
+  color: #00e5ff;
+}
+
+.operator-attachment-card .att-meta {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+}
+
+.operator-attachment-card .att-badge {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  padding: 0.15rem 0.4rem;
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #38bdf8;
+  border-radius: 3px;
+}
+
+.job-attachment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: #38bdf8;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.job-attachment-btn:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+

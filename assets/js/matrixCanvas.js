@@ -1,7 +1,8 @@
 /**
  * ============================================================
  * CYBERDECK PORTFOLIO - Matrix Rain Background Canvas
- * High-performance digital rain stream with currency drop mode
+ * High-performance digital rain stream with crystal-clear
+ * transparent clearing - perfectly uniform, non-blotchy background.
  * ============================================================
  */
 
@@ -10,18 +11,23 @@ class MatrixRain {
     this.canvas = null;
     this.ctx = null;
     this.columns = 0;
+    this.rows = 0;
     this.drops = [];
+    this.trailLengths = [];
     this.fontSize = 14;
     this.animId = null;
     this.enabled = true;
     this.isCurrencyMode = false;
     this.lastFrameTime = 0;
-    this.targetFps = 33; // ~30 FPS for battery and CPU efficiency
+    this.targetFps = 30; // ~30 FPS for battery and CPU efficiency
     this.frameInterval = 1000 / this.targetFps;
 
     // Glyphs
     this.normalChars = '0123456789ABCDEFSEC//OPXZΨΩλπ010101日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ';
     this.currencyChars = '€$¥£₹₿Ξ%0123456789';
+
+    // Character column cache to keep falling glyphs stable
+    this.charMap = [];
   }
 
   init(canvasElement) {
@@ -47,14 +53,39 @@ class MatrixRain {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.columns = Math.floor(this.canvas.width / this.fontSize);
+    this.rows = Math.floor(this.canvas.height / this.fontSize) + 2;
     this.drops = [];
+    this.trailLengths = [];
+    this.charMap = [];
+
     for (let i = 0; i < this.columns; i++) {
-      this.drops[i] = Math.floor(Math.random() * -50);
+      this.drops[i] = Math.floor(Math.random() * -Math.floor(this.rows * 0.5));
+      this.trailLengths[i] = 25 + Math.floor(Math.random() * 16); // 25 - 40 glyphs (+20% more characters)
+      this.charMap[i] = [];
+      for (let r = 0; r < this.rows + 60; r++) {
+        this.charMap[i][r] = this.getRandomChar();
+      }
     }
+  }
+
+  getRandomChar() {
+    const pool = this.isCurrencyMode ? this.currencyChars : this.normalChars;
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   setCurrencyMode(enable) {
     this.isCurrencyMode = enable;
+    if (this.charMap) {
+      for (let i = 0; i < this.columns; i++) {
+        if (this.charMap[i]) {
+          for (let r = 0; r < this.charMap[i].length; r++) {
+            if (Math.random() > 0.4) {
+              this.charMap[i][r] = this.getRandomChar();
+            }
+          }
+        }
+      }
+    }
   }
 
   toggleEffects(enabled) {
@@ -99,43 +130,64 @@ class MatrixRain {
     if (delta < this.frameInterval) return;
     this.lastFrameTime = currentTime - (delta % this.frameInterval);
 
-    // Fade the canvas cleanly to deep cyber background
-    this.ctx.fillStyle = 'rgba(2, 7, 18, 0.2)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Completely clear the canvas to 100% transparent.
+    // The background color of document.body (#020712) shines through uniformly without any blotches or banding.
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.font = `${this.fontSize}px 'Oxanium', monospace`;
 
-    const charPool = this.isCurrencyMode ? this.currencyChars : this.normalChars;
     const isGold = this.isCurrencyMode;
 
-    for (let i = 0; i < this.drops.length; i++) {
-      const char = charPool[Math.floor(Math.random() * charPool.length)];
+    for (let i = 0; i < this.columns; i++) {
+      const headRow = this.drops[i];
+      const trail = this.trailLengths[i] || 24;
       const x = i * this.fontSize;
-      const y = this.drops[i] * this.fontSize;
 
-      if (y > 0) {
+      // Draw active trail characters
+      for (let k = 0; k < trail; k++) {
+        const row = headRow - k;
+        if (row < 0) continue;
+        const y = row * this.fontSize;
+        if (y > this.canvas.height + this.fontSize) continue;
+
+        // Occasional glyph mutation for authentic matrix flicker
+        if (Math.random() < 0.04) {
+          this.charMap[i][row % (this.rows + 50)] = this.getRandomChar();
+        }
+        const char = this.charMap[i][row % (this.rows + 50)] || '0';
+
         if (isGold) {
-          // Gold drop mode for add-money
-          this.ctx.fillStyle = Math.random() > 0.85 ? '#ffffff' : '#ffd700';
-        } else {
-          // Standard Electric Cyan & Matrix Blue with clean tonal hierarchy
-          const r = Math.random();
-          if (r > 0.95) {
-            this.ctx.fillStyle = '#ffffff'; // White glowing lead glyph
-          } else if (r > 0.65) {
-            this.ctx.fillStyle = '#00e5ff'; // Primary electric cyan
+          if (k === 0) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.50)';
+          } else if (k < 3) {
+            this.ctx.fillStyle = 'rgba(255, 215, 0, 0.38)';
           } else {
-            this.ctx.fillStyle = '#007799'; // Deep cyan trail (cleanly blends into background)
+            const alpha = Math.max(0, (1 - k / trail) * 0.38);
+            this.ctx.fillStyle = `rgba(255, 215, 0, ${alpha.toFixed(2)})`;
+          }
+        } else {
+          if (k === 0) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.50)'; // Führungsglyph exakt 0.5 Deckkraft
+          } else if (k < 3) {
+            this.ctx.fillStyle = 'rgba(0, 229, 255, 0.38)'; // Übergangsglyphen bei 0.38
+          } else {
+            const alpha = Math.max(0, (1 - k / trail) * 0.38);
+            this.ctx.fillStyle = `rgba(0, 229, 255, ${alpha.toFixed(2)})`; // Schweif von 0.38 bis 0
           }
         }
 
         this.ctx.fillText(char, x, y);
       }
 
-      if (y > this.canvas.height && Math.random() > 0.975) {
-        this.drops[i] = 0;
+      // Reset column drop with +20% higher density and longer streams
+      if (headRow - trail > this.rows) {
+        if (Math.random() > 0.91) {
+          this.drops[i] = Math.floor(Math.random() * -6);
+          this.trailLengths[i] = 25 + Math.floor(Math.random() * 16);
+        }
+      } else {
+        this.drops[i]++;
       }
-      this.drops[i]++;
     }
   }
 }

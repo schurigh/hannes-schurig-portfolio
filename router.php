@@ -22,6 +22,7 @@ if (is_file($path)) {
         'ico'  => 'image/x-icon',
         'html' => 'text/html',
         'txt'  => 'text/plain',
+        'pdf'  => 'application/pdf',
     ];
     if (isset($mimes[$ext])) {
         header('Content-Type: ' . $mimes[$ext]);

@@ -46,9 +46,6 @@ $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.js
   <!-- Background Matrix Rain Stream Canvas -->
   <canvas id="matrix-canvas"></canvas>
 
-  <!-- CRT Scanline Subgrid Overlay -->
-  <div class="scanlines-overlay"></div>
-
   <!-- Offshore Wire Transfer HUD Banner (for add-money command) -->
   <div id="wire-transfer-banner">
     <div class="text-[10px] text-yellow-500 font-mono tracking-widest uppercase">OFFSHORE ROUTING // CAYMAN ISLANDS</div>
@@ -77,6 +74,44 @@ $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.js
         </svg>
       </button>
       <div id="dock-clock" class="dock-clock font-mono">00:00:00</div>
+      
+      <div class="dock-tray-divider"></div>
+
+      <div class="dock-info-wrapper">
+        <button id="dock-btn-info" class="dock-tray-info-btn font-mono" title="Projekt-Informationen &amp; Open Source" aria-expanded="false" aria-controls="dock-info-overlay">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Info</span>
+        </button>
+
+        <!-- Info Popover / Overlay -->
+        <div id="dock-info-overlay" class="dock-info-overlay hidden" role="dialog" aria-labelledby="info-overlay-title">
+          <div class="dock-info-overlay-header">
+            <div class="flex items-center gap-2">
+              <span class="text-cyan-400 text-sm">ℹ</span>
+              <span id="info-overlay-title" class="font-bold text-xs text-cyan-300 font-mono tracking-wider">PROJECT // CYBERDECK PORTFOLIO</span>
+            </div>
+            <button id="dock-info-close" class="dock-info-close-btn" aria-label="Schließen">✕</button>
+          </div>
+          <div class="dock-info-overlay-body">
+            <p class="text-xs text-gray-300 leading-relaxed font-sans mb-3.5">
+              Dieses CyberDeck-Portfolio ist ein modernes, quelloffenes (Open Source) Web-Betriebssystem und interaktives Entwickler-Portfolio im retro-futuristischen Cyberpunk-/Sci-Fi-Terminal-Stil. Es wurde als hochgradig anpassbares Schaufenster für Entwickler, Engineers und Tech-Enthusiasten konzipiert, um Projekte, berufliche Meilensteine, Fähigkeiten und Live-Demos immersiv im Browser zu präsentieren. Ausgestattet mit einem voll funktionsfähigen Fenstermanager (Verschieben, Maximieren, Kacheln), integriertem CLI-Terminal mit Easter Eggs und Befehlsausführung, Radar-Visualisierung, Web-Audio-Synthesizer für authentische Sound-Effekte und einer schlanken, dateibasierten Datenarchitektur (JSON) lässt es sich ohne Datenbank oder Framework-Overhead mühelos als eigenes Portfolio oder interaktive Web-App deployen und erweitern.
+            </p>
+            <div class="pt-3 border-t border-cyan-500 border-opacity-20 flex flex-wrap items-center justify-between gap-2.5 font-mono text-[11px]">
+              <a href="https://github.com/schurigh/hannes-schurig-portfolio" target="_blank" rel="noopener" class="dock-info-github-link">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <span>GitHub Repository</span>
+                <span>↗</span>
+              </a>
+              <div class="text-gray-400 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>Stand: 25.09.2026</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 

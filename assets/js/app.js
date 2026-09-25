@@ -249,6 +249,56 @@ class App {
       window.addEventListener('sound:mute-changed', (e) => updateSoundIcon(e.detail.isMuted));
     }
 
+    // Info Button & Popover Overlay
+    const infoBtn = document.getElementById('dock-btn-info');
+    const infoOverlay = document.getElementById('dock-info-overlay');
+    const infoClose = document.getElementById('dock-info-close');
+
+    if (infoBtn && infoOverlay) {
+      const toggleInfo = (forceState) => {
+        const isOpen = !infoOverlay.classList.contains('hidden');
+        const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+        if (shouldOpen) {
+          infoOverlay.classList.remove('hidden');
+          infoBtn.classList.add('active');
+          infoBtn.setAttribute('aria-expanded', 'true');
+          sound.playWindowOpen?.();
+        } else {
+          infoOverlay.classList.add('hidden');
+          infoBtn.classList.remove('active');
+          infoBtn.setAttribute('aria-expanded', 'false');
+          sound.playKeyClick?.();
+        }
+      };
+
+      infoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleInfo();
+      });
+
+      if (infoClose) {
+        infoClose.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleInfo(false);
+        });
+      }
+
+      // Close when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!infoOverlay.classList.contains('hidden') && !infoOverlay.contains(e.target) && !infoBtn.contains(e.target)) {
+          toggleInfo(false);
+        }
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !infoOverlay.classList.contains('hidden')) {
+          toggleInfo(false);
+        }
+      });
+    }
+
     // Initial render of open windows in taskbar
     this.updateTaskbar();
 
@@ -401,9 +451,9 @@ class App {
       title: isLocal ? 'SEC//WIN: TERMINAL [ROOT // ADMIN]' : 'SEC//WIN: TERMINAL [ACTIVE]',
       contentHtml: `<div id="terminal-mount" style="height: 100%; width: 100%; display: flex; flex-direction: column;"></div>`,
       width: 640,
-      height: 400,
+      height: Math.min(800, Math.max(500, window.innerHeight - 100)),
       x: 60,
-      y: 80,
+      y: 40,
       onClose: () => {
         this.terminalInstance = null;
       }
@@ -787,8 +837,72 @@ class App {
             </div>
           </div>
 
+          <!-- Middle Section: Skills (Left) & File Attachments (Right) -->
+          ${(profile.skills?.length || profile.attachments?.length) ? `
+          <div class="mt-6 pt-5 border-t border-cyan-500 border-opacity-30">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              
+              <!-- Left: Skills -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">SKILLS // FÄHIGKEITEN &amp; KENNTNISSE</span>
+                    <span class="text-[10px] px-1.5 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${(profile.skills || []).length}</span>
+                  </div>
+                  <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">// VERIFIED SKILLSET</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 p-3 rounded bg-black bg-opacity-40 border border-cyan-500 border-opacity-20 max-h-56 overflow-y-auto custom-scrollbar">
+                  ${(profile.skills || []).map(skill => `
+                    <span class="operator-skill-chip">
+                      <span class="text-cyan-400 text-[9px]">⚡</span>
+                      <span>${escapeHtml(skill)}</span>
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Right: Attachments / Documents -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">ATTACHMENTS // DOKUMENTE</span>
+                    <span class="text-[10px] px-1.5 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${(profile.attachments || []).length}</span>
+                  </div>
+                  <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">// REPOSITORY FILES</span>
+                </div>
+                <div class="space-y-2 p-3 rounded bg-black bg-opacity-40 border border-cyan-500 border-opacity-20 max-h-56 overflow-y-auto custom-scrollbar">
+                  ${(profile.attachments && profile.attachments.length > 0) ? profile.attachments.map(att => {
+                    const href = att.file || att.url || '#';
+                    const icon = att.icon || (att.url ? '🌐' : '📄');
+                    const badgeText = att.type || (att.url ? 'LINK' : 'PDF');
+                    return `
+                    <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="operator-attachment-card group">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="text-cyan-400 text-base">${icon}</span>
+                        <div class="min-w-0">
+                          <div class="att-title truncate">${escapeHtml(att.title || att.name)}</div>
+                          <div class="att-meta truncate">${escapeHtml(att.desc || att.file || att.url)}</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2 shrink-0">
+                        ${att.size ? `<span class="text-[10px] text-gray-400 font-mono">${escapeHtml(att.size)}</span>` : ''}
+                        <span class="att-badge">${escapeHtml(badgeText)}</span>
+                        <span class="text-cyan-400 text-xs group-hover:translate-x-0.5 transition-transform">↗</span>
+                      </div>
+                    </a>
+                  `;
+                  }).join('') : `
+                    <div class="text-xs text-gray-400 font-mono p-2">Keine Dateianhänge hinterlegt.</div>
+                  `}
+                </div>
+              </div>
+
+            </div>
+          </div>
+          ` : ''}
+
           <!-- Career & Job Experience Timeline (CV) -->
-          <div class="mt-6 pt-4 border-t border-cyan-500 border-opacity-30">
+          <div class="mt-6 pt-5 border-t border-cyan-500 border-opacity-30">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div class="flex items-center gap-2">
                 <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">CAREER TIMELINE // BERUFLICHER WERDEGANG</span>
@@ -819,7 +933,25 @@ class App {
                           <span class="text-cyan-400 font-mono text-[11px]">🏢</span>
                           <span class="text-cyan-200">${escapeHtml(job.company)}</span>
                         </div>
-                        <p class="timeline-card-desc text-xs text-gray-300 leading-relaxed">${escapeHtml(job.description)}</p>
+                        <p class="operator-timeline-card-desc">${escapeHtml(job.description)}</p>
+                        ${(job.attachments && job.attachments.length > 0) ? `
+                          <div class="mt-3 pt-2.5 border-t border-cyan-500 border-opacity-20 flex flex-wrap items-center gap-2">
+                            <span class="text-[10px] text-gray-400 font-mono">ANHANG / LINK:</span>
+                            ${job.attachments.map(att => {
+                              const href = att.file || att.url || '#';
+                              const icon = att.icon || (att.url ? '🌐' : '📎');
+                              const typeStr = att.type ? `<span class="text-[9px] opacity-75">(${escapeHtml(att.type)})</span>` : '';
+                              return `
+                                <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="job-attachment-btn">
+                                  <span>${icon}</span>
+                                  <span>${escapeHtml(att.title || att.name || 'Dokument')}</span>
+                                  ${typeStr}
+                                  <span class="text-[10px]">↗</span>
+                                </a>
+                              `;
+                            }).join('')}
+                          </div>
+                        ` : ''}
                       </div>
                     </div>
                   </div>
@@ -829,8 +961,8 @@ class App {
           </div>
         </div>
       `,
-      width: Math.min(980, Math.max(820, Math.round(window.innerWidth * 0.65))),
-      height: Math.min(Math.max(620, Math.round(window.innerHeight * 0.82)), Math.max(580, Math.round(window.innerHeight * 0.72)))
+      width: Math.min(1020, Math.max(840, Math.round(window.innerWidth * 0.7))),
+      height: Math.min(Math.max(680, Math.round(window.innerHeight * 0.85)), Math.max(620, Math.round(window.innerHeight * 0.75)))
     });
 
     // Handle E-Mail click to open encrypted dispatch contact modal
@@ -953,8 +1085,8 @@ class App {
           </form>
         </div>
       `,
-      width: 520,
-      height: 455
+      width: 540,
+      height: Math.min(545, Math.max(480, window.innerHeight - 100))
     });
 
     const form = document.getElementById('contact-form');

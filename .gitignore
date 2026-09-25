@@ -10,6 +10,13 @@ data/projects.json
 data/img/**
 !data/img/**/
 !data/img/**/*example*
+
+# Ignore private documents/attachments in data/files/, allow example files
+data/files/**
+!data/files/**/
+!data/files/**/*example*
+
+
 config.php
 .env
 .env.local
