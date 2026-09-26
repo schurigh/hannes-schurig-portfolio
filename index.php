@@ -16,6 +16,8 @@ if (empty($_SESSION['csrf_token'])) {
 $csrfToken = htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8');
 $profileFile = file_exists(__DIR__ . '/data/profile.json') ? 'data/profile.json' : 'data/profile.example.json';
 $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.json' : 'data/projects.example.json';
+$cssVersion = file_exists(__DIR__ . '/assets/css/cyber-theme.css') ? filemtime(__DIR__ . '/assets/css/cyber-theme.css') : time();
+$appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ . '/assets/js/app.js') : time();
 ?>
 <!DOCTYPE html>
 <html lang="de" class="theme-cyan">
@@ -36,7 +38,7 @@ $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.js
 
   <!-- Local Stylesheets (No external CDNs - 100% DSGVO-compliant) -->
   <link rel="stylesheet" href="assets/css/tailwind.min.css">
-  <link rel="stylesheet" href="assets/css/cyber-theme.css">
+  <link rel="stylesheet" href="assets/css/cyber-theme.css?v=<?= $cssVersion ?>">
 
   <!-- Local Markdown Parser -->
   <script src="assets/js/vendor/marked.min.js"></script>
@@ -106,7 +108,7 @@ $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.js
               </a>
               <div class="text-gray-400 flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Stand: 25.09.2026</span>
+                <span>Stand: 26.09.2026</span>
               </div>
             </div>
           </div>
@@ -148,6 +150,6 @@ $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.js
   </div>
 
   <!-- App Bootstrap Module -->
-  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/app.js?v=<?= $appJsVersion ?>"></script>
 </body>
 </html>

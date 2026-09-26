@@ -396,7 +396,10 @@ export class TerminalShell {
         const projects = dataLoader.getProjects();
         this.printLine(`VIRTUAL FS /data/projects/ [${projects.length} NODES]:`, 'output-info');
         projects.forEach((p) => {
-          this.printLine(`  [DIR] ${p.slug.padEnd(24)} | ${p.status.padEnd(20)} | ${p.title}`);
+          const st = (p.status || 'ONLINE').padEnd(8);
+          const vis = (p.visibility || 'PUBLIC').padEnd(8);
+          const dev = (p.development || '').padEnd(14);
+          this.printLine(`  [DIR] ${p.slug.padEnd(24)} | ${st} | ${vis} | ${dev} | ${p.title}`);
         });
         break;
       }

@@ -468,6 +468,120 @@ class App {
     }
   }
 
+  // Render project status, visibility, and development badges
+  renderProjectBadges(p) {
+    const badges = [];
+
+    // 1. Status: ONLINE (green pulsating dot) / OFFLINE (red static dot)
+    const rawStatus = (p.status || '').trim().toUpperCase();
+    if (rawStatus.includes('OFFLINE')) {
+      badges.push(`
+        <span class="project-badge badge-status-offline" title="System-Status: Offline">
+          <span class="badge-dot-static"></span>
+          <span>OFFLINE</span>
+        </span>
+      `);
+    } else if (rawStatus.includes('ONLINE') || rawStatus.includes('LIVE')) {
+      badges.push(`
+        <span class="project-badge badge-status-online" title="System-Status: Online">
+          <span class="badge-dot-pulsing"></span>
+          <span>ONLINE</span>
+        </span>
+      `);
+    } else if (rawStatus) {
+      badges.push(`
+        <span class="project-badge badge-status-neutral">
+          <span class="badge-dot-static"></span>
+          <span>${escapeHtml(rawStatus)}</span>
+        </span>
+      `);
+    }
+
+    // 2. Visibility: PUBLIC (globe SVG) / PRIVATE (lock SVG)
+    const rawVis = (p.visibility || '').trim().toUpperCase();
+    if (rawVis.includes('PRIVATE') || rawVis.includes('DISCLOSED')) {
+      badges.push(`
+        <span class="project-badge badge-vis-private" title="Sichtbarkeit: Privat / Intern">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>PRIVATE</span>
+        </span>
+      `);
+    } else if (rawVis.includes('PUBLIC') || !rawVis) {
+      badges.push(`
+        <span class="project-badge badge-vis-public" title="Sichtbarkeit: Öffentlich">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>PUBLIC</span>
+        </span>
+      `);
+    } else {
+      badges.push(`
+        <span class="project-badge badge-status-neutral">
+          <span>${escapeHtml(rawVis)}</span>
+        </span>
+      `);
+    }
+
+    // 3. Development: FINISHED (check SVG) / BETA, CLOSED (ban SVG) / BETA, WIP (amber hammer) / PROD, WIP (cyan hammer)
+    const rawDev = (p.development || '').trim().toUpperCase();
+    if (rawDev.includes('FINISHED') || rawDev.includes('FINAL')) {
+      badges.push(`
+        <span class="project-badge badge-dev-finished" title="Entwicklungsstatus: Fertiggestellt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>FINISHED</span>
+        </span>
+      `);
+    } else if (rawDev.includes('CLOSED')) {
+      badges.push(`
+        <span class="project-badge badge-dev-closed" title="Entwicklungsstatus: Closed Beta / Geschlossen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+          </svg>
+          <span>BETA, CLOSED</span>
+        </span>
+      `);
+    } else if (rawDev.includes('BETA')) {
+      badges.push(`
+        <span class="project-badge badge-dev-wip" title="Entwicklungsstatus: Beta, Work In Progress">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <span>BETA, WIP</span>
+        </span>
+      `);
+    } else if (rawDev.includes('PROD')) {
+      badges.push(`
+        <span class="project-badge badge-dev-prod" title="Entwicklungsstatus: Produktion, Laufende Entwicklung">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <span>PROD, WIP</span>
+        </span>
+      `);
+    } else if (rawDev) {
+      badges.push(`
+        <span class="project-badge badge-status-neutral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>${escapeHtml(rawDev)}</span>
+        </span>
+      `);
+    }
+
+    return badges.join('');
+  }
+
   // Open Projects Explorer Window (Design 4: Circuit Timeline Stream)
   openProjectsExplorer() {
     const existing = windowManager.getWindow('projects-explorer');
@@ -510,9 +624,9 @@ class App {
             </div>
             <div class="timeline-card-body">
               <div>
-                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
                   <h3 class="timeline-card-title">${escapeHtml(p.title)}</h3>
-                  <span class="text-[10px] px-2.5 py-0.5 border border-cyan-400 text-cyan-300 rounded font-mono">${escapeHtml(p.status)}</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">${this.renderProjectBadges(p)}</div>
                 </div>
                 <p class="timeline-card-desc">${escapeHtml(p.highlight || '')}</p>
               </div>
@@ -612,78 +726,101 @@ class App {
     });
   }
 
-  // Open Project Detail Window
+  // Open Project Detail Window (3-Box Layout: 1. Overview/Hero, 2. Gallery, 3. Deep Dive & Highlights)
   openProjectDetail(slug) {
     const project = dataLoader.getProjectBySlug(slug);
     if (!project) return;
 
-    const parsedMarkdown = dataLoader.renderMarkdown(project.content);
+    const parsedMarkdown = dataLoader.renderMarkdown(project.content || '');
+    const featureMedia = (project.media && project.media.length > 0) ? project.media[0] : null;
+
+    // Split description into paragraphs (1-2 paragraphs)
+    const descText = (project.description || project.highlight || '').trim();
+    const descParagraphs = descText ? descText.split(/\n\s*\n/) : [];
 
     const contentHtml = `
       <div class="space-y-4">
-        <!-- Media & Highlights Banner -->
-        <div class="border border-cyan-500 border-opacity-30 p-3 rounded bg-black bg-opacity-40">
-          <div class="flex flex-col sm:flex-row gap-4 items-start">
-            ${project.media && project.media.length > 0 ? `
-              <div class="w-full sm:w-64 flex-shrink-0">
-                <div class="project-hero-thumb group relative rounded border border-cyan-500 border-opacity-30 hover:border-cyan-400 transition cursor-pointer overflow-hidden bg-black bg-opacity-50" data-media-idx="0">
-                  <img src="${project.media[0].thumb || project.media[0].url}" alt="${escapeHtml(project.title)}" class="w-full h-auto object-cover group-hover:scale-105 transition duration-300" />
+        <!-- ==========================================
+             KASTEN 1: Feature Image (_1), Titel, Tags,
+             Datum, Längere Beschreibung & Links
+             (Keine Highlights!)
+             ========================================== -->
+        <div class="border border-cyan-500 border-opacity-30 p-4 rounded bg-black bg-opacity-40 shadow-lg">
+          <div class="flex flex-col md:flex-row gap-4 items-start">
+            ${featureMedia ? `
+              <div class="w-full md:w-72 flex-shrink-0">
+                <div class="project-hero-thumb group relative rounded border border-cyan-500 border-opacity-35 hover:border-cyan-400 transition cursor-pointer overflow-hidden bg-black bg-opacity-60 shadow" data-media-idx="0">
+                  <div class="aspect-video md:aspect-auto md:h-48 w-full overflow-hidden flex items-center justify-center bg-gray-950">
+                    <img src="${featureMedia.thumb || featureMedia.url}" alt="${escapeHtml(project.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                  </div>
                   <div class="absolute inset-0 bg-cyan-950 bg-opacity-0 group-hover:bg-opacity-50 transition flex items-center justify-center">
-                    <span class="opacity-0 group-hover:opacity-100 transition text-xs text-cyan-200 font-mono bg-black bg-opacity-80 px-2.5 py-1 rounded border border-cyan-400 flex items-center gap-1">
+                    <span class="opacity-0 group-hover:opacity-100 transition text-xs text-cyan-200 font-mono bg-black bg-opacity-80 px-2.5 py-1 rounded border border-cyan-400 flex items-center gap-1 shadow">
                       <span>🔍</span>
-                      <span>Galerie öffnen (${project.media.length})</span>
+                      <span>Großansicht</span>
                     </span>
                   </div>
                 </div>
-                <div class="text-[10px] text-gray-400 font-mono mt-1 text-center">${escapeHtml(project.media[0].caption || '')}</div>
+                ${featureMedia.caption ? `<div class="text-[10px] text-gray-400 font-mono mt-1.5 text-center">${escapeHtml(featureMedia.caption)}</div>` : ''}
               </div>
             ` : ''}
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2 flex-wrap">
-                <h2 class="text-lg font-bold text-cyan-400">${project.title}</h2>
-                ${project.dateDisplay ? `<span class="text-xs px-2 py-0.5 bg-cyan-950 text-cyan-200 border border-cyan-500 border-opacity-30 rounded font-mono">${project.dateDisplay}</span>` : ''}
-                <span class="text-xs px-2 py-0.5 border border-cyan-400 text-cyan-300 rounded font-mono">${project.status}</span>
-              </div>
-              <p class="text-sm text-gray-200 mb-3 leading-relaxed">${project.highlight}</p>
-              
-              <div class="text-xs font-bold text-cyan-300 mb-1">FEATURES // HIGHLIGHTS:</div>
-              <ul class="list-disc list-inside text-xs text-gray-300 space-y-1 mb-3">
-                ${project.features.map((f) => `<li>${f}</li>`).join('')}
-              </ul>
 
-              <div class="flex flex-wrap gap-2 mt-2">
-                ${project.links ? project.links.map((link) => `
-                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="text-xs px-3 py-1 bg-cyan-500 bg-opacity-20 border border-cyan-400 hover:bg-opacity-40 text-white rounded font-mono transition flex items-center gap-1.5">
-                    <span>↗</span>
-                    <span>${link.label}</span>
-                  </a>
-                `).join('') : ''}
+            <div class="flex-1 flex flex-col justify-between self-stretch">
+              <div>
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                  <h2 class="text-xl font-bold text-cyan-400 tracking-wide">${escapeHtml(project.title)}</h2>
+                  ${project.dateDisplay ? `<span class="text-xs px-2.5 py-0.5 bg-cyan-950 text-cyan-200 border border-cyan-500 border-opacity-40 rounded font-mono">${escapeHtml(project.dateDisplay)}</span>` : ''}
+                </div>
+
+                <!-- Separated Status Badges & Category -->
+                <div class="flex items-center gap-1.5 mb-3 flex-wrap">
+                  ${this.renderProjectBadges(project)}
+                  ${project.category ? `<span class="text-[11px] px-2 py-0.5 bg-black bg-opacity-50 text-gray-300 border border-gray-700 rounded font-mono">${escapeHtml(project.category)}</span>` : ''}
+                </div>
+
+                <!-- Longer Description (1-2 paragraphs, NO highlights) -->
+                <div class="text-sm text-gray-200 leading-relaxed space-y-2 mb-4">
+                  ${descParagraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join('')}
+                </div>
               </div>
+
+              <!-- Action Links (Demo, Repository, etc.) -->
+              ${project.links && project.links.length > 0 ? `
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-cyan-500 border-opacity-15">
+                  ${project.links.map((link) => `
+                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="text-xs px-3.5 py-1.5 bg-cyan-500 bg-opacity-15 border border-cyan-400 hover:bg-opacity-35 hover:border-cyan-300 text-cyan-100 rounded font-mono transition flex items-center gap-1.5 shadow-sm">
+                      <span>↗</span>
+                      <span class="font-semibold">${escapeHtml(link.label)}</span>
+                    </a>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
           </div>
         </div>
 
-        <!-- Screenshots / Lightbox Gallery -->
-        ${project.media && project.media.length > 1 ? `
-          <div class="border border-cyan-500 border-opacity-30 p-3 rounded bg-black bg-opacity-40">
-            <div class="flex items-center justify-between mb-2.5">
+        <!-- ==========================================
+             KASTEN 2: Bilder / Media Galerie
+             ========================================== -->
+        ${project.media && project.media.length > 0 ? `
+          <div class="border border-cyan-500 border-opacity-30 p-3.5 rounded bg-black bg-opacity-40 shadow-lg">
+            <div class="flex items-center justify-between mb-3 border-b border-cyan-500 border-opacity-20 pb-2">
               <div class="text-xs text-cyan-400 font-bold font-mono tracking-wider flex items-center gap-2">
-                <span>📸 SCREENSHOTS // GALERIE</span>
-                <span class="text-[10px] text-cyan-300 font-mono px-1.5 py-0.2 border border-cyan-500 border-opacity-30 rounded">${project.media.length} BILDER</span>
+                <span>📸 SYSTEM-MEDIEN // BILDERGALERIE</span>
+                <span class="text-[10px] text-cyan-300 font-mono px-2 py-0.5 border border-cyan-500 border-opacity-30 rounded bg-cyan-950 bg-opacity-40">${project.media.length} BILDER</span>
               </div>
-              <span class="text-[10px] text-gray-400 font-mono">[ KLICKEN ZUR GROßANSICHT ]</span>
+              <span class="text-[10px] text-gray-400 font-mono hidden sm:inline">[ KLICKEN ZUR VERGRÖßERUNG ]</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               ${project.media.map((item, idx) => `
-                <div class="project-thumb-card group relative border border-cyan-500 border-opacity-25 hover:border-cyan-400 rounded overflow-hidden cursor-pointer transition bg-black bg-opacity-60" data-media-idx="${idx}">
+                <div class="project-thumb-card group relative border border-cyan-500 border-opacity-25 hover:border-cyan-400 rounded overflow-hidden cursor-pointer transition bg-black bg-opacity-60 shadow-sm" data-media-idx="${idx}">
                   <div class="aspect-video w-full overflow-hidden flex items-center justify-center bg-gray-950">
                     <img src="${item.thumb || item.url}" alt="${escapeHtml(item.caption || project.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
                   </div>
                   <div class="absolute inset-0 bg-cyan-950 bg-opacity-0 group-hover:bg-opacity-50 transition flex items-center justify-center">
-                    <span class="opacity-0 group-hover:opacity-100 transition text-[11px] text-cyan-200 font-mono bg-black bg-opacity-80 px-2 py-0.5 rounded border border-cyan-400">🔍 Großansicht</span>
+                    <span class="opacity-0 group-hover:opacity-100 transition text-[11px] text-cyan-200 font-mono bg-black bg-opacity-80 px-2 py-0.5 rounded border border-cyan-400 shadow">🔍 Großansicht</span>
                   </div>
                   ${item.caption ? `
-                    <div class="p-1.5 text-[10px] text-gray-400 font-mono truncate" title="${escapeHtml(item.caption)}">${escapeHtml(item.caption)}</div>
+                    <div class="p-1.5 text-[10px] text-gray-400 font-mono truncate bg-black bg-opacity-70 border-t border-cyan-500 border-opacity-10" title="${escapeHtml(item.caption)}">${escapeHtml(item.caption)}</div>
                   ` : ''}
                 </div>
               `).join('')}
@@ -691,19 +828,55 @@ class App {
           </div>
         ` : ''}
 
-        <!-- Markdown Body -->
-        <div class="markdown-body border-t border-cyan-500 border-opacity-20 pt-3">
-          ${parsedMarkdown}
+        <!-- ==========================================
+             KASTEN 3: Sehr ausführliche Beschreibung &
+             Highlights (kürzer gehalten, < 25 Wörter)
+             ========================================== -->
+        <div class="border border-cyan-500 border-opacity-30 p-4 rounded bg-black bg-opacity-40 shadow-lg space-y-4">
+          <div class="flex items-center justify-between border-b border-cyan-500 border-opacity-20 pb-2">
+            <div class="text-xs text-cyan-400 font-bold font-mono tracking-wider flex items-center gap-2">
+              <span>⚡ SYSTEM-ARCHITEKTUR & SPEZIFIKATION</span>
+            </div>
+            <span class="text-[10px] text-cyan-500 font-mono">// DEEP DIVE & HIGHLIGHTS</span>
+          </div>
+
+          <!-- Highlights (Features) -->
+          ${project.features && project.features.length > 0 ? `
+            <div>
+              <div class="text-xs font-bold text-cyan-300 font-mono mb-2.5 flex items-center gap-1.5">
+                <span class="text-cyan-400">❖</span>
+                <span>KERN-FEATURES // HIGHLIGHTS:</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                ${project.features.map((f) => `
+                  <div class="p-2.5 rounded border border-cyan-500 border-opacity-20 bg-cyan-950 bg-opacity-20 hover:border-opacity-40 transition flex items-start gap-2.5 text-xs text-gray-300">
+                    <span class="text-cyan-400 font-bold mt-0.5 flex-shrink-0 text-xs">▸</span>
+                    <span class="leading-relaxed">${escapeHtml(f)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Detailed Markdown Content -->
+          ${parsedMarkdown ? `
+            <div class="pt-2 border-t border-cyan-500 border-opacity-15">
+              <div class="markdown-body">
+                ${parsedMarkdown}
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
     `;
 
+    const startHeight = Math.min(680, Math.round(window.innerHeight * 0.85));
     const win = windowManager.createWindow({
       id: `proj-${slug}`,
       title: `SEC//PROJ: ${project.title.toUpperCase()}`,
       contentHtml,
-      width: 760,
-      height: 520
+      width: 840,
+      height: startHeight
     });
 
     // Attach click events to all gallery thumbnails to open Lightbox
@@ -711,7 +884,9 @@ class App {
     allThumbTriggers.forEach((trigger) => {
       trigger.addEventListener('click', () => {
         const idx = parseInt(trigger.dataset.mediaIdx || '0', 10);
-        lightboxViewer.open(project.media, idx, project.title);
+        if (project.media && project.media.length > 0) {
+          lightboxViewer.open(project.media, idx, project.title);
+        }
       });
     });
   }

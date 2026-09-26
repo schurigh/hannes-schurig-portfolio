@@ -3,7 +3,7 @@
     "slug": "cyber-matrix-shell",
     "title": "Cyber Matrix Terminal",
     "category": "System Shell / UI",
-    "status": "LIVE // FINAL",
+    "status": "ONLINE",
     "startDate": "2025-10",
     "dateDisplay": "Oktober 2025",
     "highlight": "Interaktive Terminal-Emulation im Retro-Cyberpunk-Stil mit Web Audio API Soundeffekten und CRT-Simulation.",
@@ -33,13 +33,16 @@
         "type": "github"
       }
     ],
-    "content": "### Cyber Matrix Terminal\n\nEin interaktives Terminal im Retro-Cyberpunk-Stil. Entwickelt nach dem Prinzip der Zero-Dependency-Architektur mit nativer Web Audio API Sound-Synthese und animierter Canvas-Röhrenmonitor-Simulation."
+    "content": "### Cyber Matrix Terminal\n\nEin interaktives Terminal im Retro-Cyberpunk-Stil. Entwickelt nach dem Prinzip der Zero-Dependency-Architektur mit nativer Web Audio API Sound-Synthese und animierter Canvas-Röhrenmonitor-Simulation.",
+    "visibility": "PUBLIC",
+    "development": "FINISHED",
+    "description": "Das Cyber Matrix Terminal ist eine interaktive Terminal-Emulation im Retro-Cyberpunk-Stil mit nativer Web Audio API Sound-Synthese und animierter Canvas-Röhrenmonitor-Simulation.\n\nEs dient als Referenzimplementierung für leichtgewichtige, performante Terminal-UIs im Web ohne externe Abhängigkeiten."
   },
   {
     "slug": "neural-flow-simulator",
     "title": "Neural Flow Simulator",
     "category": "Simulation / WebGL",
-    "status": "LIVE // BETA",
+    "status": "ONLINE",
     "startDate": "2025-12",
     "dateDisplay": "Dezember 2025",
     "highlight": "Echtzeit-Visualisierung neuronaler Datenströme und Multi-Agenten-Pfade im interaktiven Canvas-Grid.",
@@ -69,13 +72,16 @@
         "type": "github"
       }
     ],
-    "content": "### Neural Flow Simulator\n\nEine experimentelle Simulation zur Darstellung autonomer Datenströme und Agenten-Pfade im Raum."
+    "content": "### Neural Flow Simulator\n\nEine experimentelle Simulation zur Darstellung autonomer Datenströme und Agenten-Pfade im Raum.",
+    "visibility": "PUBLIC",
+    "development": "BETA, WIP",
+    "description": "Der Neural Flow Simulator ist eine experimentelle Echtzeit-Simulation zur Darstellung autonomer Datenströme und Multi-Agenten-Pfade im Raum.\n\nDas Projekt nutzt moderne WebGL- und Canvas-Technologien zur performanten Berechnung dynamischer Partikelnetze mit physikalischer Dämpfung und Echtzeit-Parametersteuerung."
   },
   {
     "slug": "smart-vault-manager",
     "title": "Smart Vault Manager",
     "category": "Web Application",
-    "status": "LIVE // PROD",
+    "status": "ONLINE",
     "startDate": "2026-03",
     "dateDisplay": "März 2026",
     "highlight": "Clientseitig verschlüsselte PWA zur sicheren Verwaltung lokaler Notizen und Konfigurations-Snippets.",
@@ -105,13 +111,16 @@
         "type": "demo"
       }
     ],
-    "content": "### Smart Vault Manager\n\nEin minimalistischer, lokaler Datensafe für Konfigurationen und sensible Snippets. Alle Daten verbleiben verschlüsselt im Browser."
+    "content": "### Smart Vault Manager\n\nEin minimalistischer, lokaler Datensafe für Konfigurationen und sensible Snippets. Alle Daten verbleiben verschlüsselt im Browser.",
+    "visibility": "PRIVATE",
+    "development": "PROD, WIP",
+    "description": "Smart Vault Manager ist eine clientseitig verschlüsselte Progressive Web App zur sicheren Verwaltung sensibler Notizen, Zugangsdaten und Konfigurations-Snippets.\n\nAlle Daten werden direkt im Browser per WebCrypto API verschlüsselt und persistent in der IndexedDB abgelegt – inklusive Offline-First Unterstützung und verschlüsseltem JSON-Export."
   },
   {
     "slug": "holodash-telemetry",
     "title": "HoloDash Telemetry",
     "category": "Dashboard / IoT",
-    "status": "PROD // WIP",
+    "status": "OFFLINE",
     "startDate": "2026-07",
     "dateDisplay": "Juli 2026",
     "highlight": "Modulares Überwachungs-Dashboard für Systemmetriken, Latenz-Telemetrie und Umgebungssensoren.",
@@ -141,6 +150,9 @@
         "type": "github"
       }
     ],
-    "content": "### HoloDash Telemetry\n\nEin modulares HUD-Dashboard für Echtzeit-Monitoring und Sensor-Telemetrie im modernen Cyber-Look."
+    "content": "### HoloDash Telemetry\n\nEin modulares HUD-Dashboard für Echtzeit-Monitoring und Sensor-Telemetrie im modernen Cyber-Look.",
+    "visibility": "PUBLIC",
+    "development": "BETA, CLOSED",
+    "description": "HoloDash Telemetry ist ein modulares Dashboard-Interface für IoT-Metriken, Latenz-Telemetrie und Umgebungssensoren im Retro-Cyber-HUD-Design.\n\nEs visualisiert Messwerte in flexibel anpassbaren Widget-Rastern mit akustischen Schwellenwert-Alarmen und WebSocket-Streaming."
   }
 ]
