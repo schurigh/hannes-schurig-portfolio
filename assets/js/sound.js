@@ -284,6 +284,107 @@ class SoundEngine {
       setTimeout(() => osc.disconnect(), 900);
     } catch (e) {}
   }
+
+  // Continuous pulsating emergency siren for self-destruct countdown
+  startSiren() {
+    if (!this.ensureReady()) return () => {};
+    let active = true;
+    let timer = null;
+
+    const pulse = () => {
+      if (!active || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        // Rising and falling emergency siren sweep
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.linearRampToValueAtTime(880, now + 0.45);
+        osc.frequency.linearRampToValueAtTime(420, now + 0.95);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.22, now + 0.12);
+        gain.gain.setValueAtTime(0.22, now + 0.65);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(now);
+        osc.stop(now + 0.96);
+        setTimeout(() => osc.disconnect(), 1050);
+      } catch (e) {}
+    };
+
+    pulse();
+    timer = setInterval(pulse, 1000);
+
+    return () => {
+      active = false;
+      if (timer) clearInterval(timer);
+    };
+  }
+
+  // Violent glitch static noise & electrical distortion burst
+  playGlitchDistortion() {
+    if (!this.ensureReady()) return;
+    try {
+      const now = this.ctx.currentTime;
+      const duration = 1.7;
+
+      // 1. Harsh White Noise Buffer
+      const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = this.ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, now);
+      filter.frequency.exponentialRampToValueAtTime(120, now + duration);
+      filter.Q.setValueAtTime(2.5, now);
+
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.28, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      whiteNoise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(this.masterGain);
+
+      whiteNoise.start(now);
+      whiteNoise.stop(now + duration);
+
+      // 2. Detuned Square Oscillators (digital tearing)
+      [75, 115, 260].forEach((baseFreq) => {
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.setValueAtTime(baseFreq * 2.8, now + 0.35);
+        osc.frequency.setValueAtTime(baseFreq * 0.4, now + 0.9);
+        osc.frequency.exponentialRampToValueAtTime(25, now + duration);
+
+        oscGain.gain.setValueAtTime(0.14, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+
+        osc.start(now);
+        osc.stop(now + duration);
+        setTimeout(() => osc.disconnect(), 1800);
+      });
+    } catch (e) {}
+  }
 }
 
 export const sound = new SoundEngine();

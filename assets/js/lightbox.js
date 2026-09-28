@@ -110,8 +110,12 @@ export class LightboxViewer {
 
       <div class="lightbox-main-stage">
         ${total > 1 ? `
-          <button id="lb-prev-btn" class="lightbox-nav-btn lightbox-prev" title="Vorheriges Bild (Pfeiltaste links)">❮</button>
-        ` : '<div style="width:52px;"></div>'}
+          <button id="lb-prev-btn" class="lightbox-nav-btn lightbox-prev" title="Vorheriges Bild (Pfeiltaste links)" aria-label="Vorheriges Bild">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+        ` : '<div class="lightbox-nav-spacer"></div>'}
 
         <div class="lightbox-img-wrapper" id="lb-img-container">
           <img id="lb-main-image" src="${current.url}" alt="${this.escape(current.caption || '')}" class="lightbox-image" />
@@ -119,8 +123,12 @@ export class LightboxViewer {
         </div>
 
         ${total > 1 ? `
-          <button id="lb-next-btn" class="lightbox-nav-btn lightbox-next" title="Nächstes Bild (Pfeiltaste rechts)">❯</button>
-        ` : '<div style="width:52px;"></div>'}
+          <button id="lb-next-btn" class="lightbox-nav-btn lightbox-next" title="Nächstes Bild (Pfeiltaste rechts)" aria-label="Nächstes Bild">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        ` : '<div class="lightbox-nav-spacer"></div>'}
       </div>
 
       ${total > 1 ? `

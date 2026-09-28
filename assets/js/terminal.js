@@ -201,11 +201,25 @@ export class TerminalShell {
     const availableCommands = this.getAvailableCommands().map((c) => c.cmd);
     const projects = dataLoader.getProjects().map((p) => p.slug);
 
-    // If input starts with open
-    if (input.startsWith('open ') || input.startsWith('delete-content ')) {
+    // If input starts with project slug commands
+    if (input.startsWith('open ') || input.startsWith('delete-project ')) {
       const parts = input.split(' ');
       const prefix = parts[1] || '';
       const match = projects.find((p) => p.startsWith(prefix));
+      if (match) {
+        this.inputEl.value = `${parts[0]} ${match}`;
+        this.currentInput = this.inputEl.value;
+        this.updateDisplay();
+        sound.playKeyClick();
+      }
+      return;
+    }
+
+    // If input starts with color command
+    if (input.startsWith('change-color ') || input.startsWith('color ') || input.startsWith('theme ')) {
+      const parts = input.split(' ');
+      const prefix = (parts[1] || '').toLowerCase();
+      const match = windowManager.themes.find((t) => t.startsWith(prefix));
       if (match) {
         this.inputEl.value = `${parts[0]} ${match}`;
         this.currentInput = this.inputEl.value;
@@ -301,51 +315,37 @@ export class TerminalShell {
   }
 
   getAvailableCommands() {
-    // Tier 0: Default
-    const tier0 = [
+    // All interactive and system directives are available
+    return [
       { cmd: 'help', desc: 'Display authorized system commands.' },
-      { cmd: 'login', desc: 'Elevate security clearance (admin / user / guest).' },
-      { cmd: 'auth', desc: 'Alias for login.' },
+      { cmd: 'send-msg', desc: 'Open encrypted dispatch channel to operator.' },
       { cmd: 'ls', desc: 'List active portfolio projects in virtual filesystem.' },
       { cmd: 'open', desc: 'Open project specification: open [slug].' },
-      { cmd: 'cls', desc: 'Purge terminal scrollback buffer.' },
-      { cmd: 'clear', desc: 'Alias for cls.' },
-      { cmd: 'exit', desc: 'Terminate terminal session.' },
-      { cmd: 'quit', desc: 'Alias for exit.' },
-      { cmd: 'disable-effects', desc: 'Pause matrix stream & high-GPU canvas loops.' },
-      { cmd: 'enable-effects', desc: 'Resume matrix stream & visual telemetry.' },
-      { cmd: 'reset', desc: 'Close all secondary windows & reset security clearance.' },
-      { cmd: 'restart', desc: 'Trigger 5s hardware reboot sequence.' },
-      { cmd: 'reboot', desc: 'Alias for restart.' },
-      { cmd: 'shutdown', desc: 'Alias for restart.' }
-    ];
-
-    // Tier 1: Guest / User
-    const tier1 = [
-      { cmd: 'send-greetings', desc: 'Open encrypted dispatch channel to operator.' },
-      { cmd: 'list-users', desc: 'Query registered accounts in passwd database.' }
-    ];
-
-    // Tier 2: Admin
-    const tier2 = [
-      { cmd: 'add-money', desc: 'Trigger offshore wire transfer to Cayman account.' },
-      { cmd: 'add-content', desc: 'Flood workspace with classified intelligence files.' },
-      { cmd: 'add-project', desc: 'Synthesize new experimental Skynet repository.' },
-      { cmd: 'delete-content', desc: 'Purge active or specified project from registry.' },
+      { cmd: 'add-project', desc: 'Create new uninitialized repository placeholder.' },
+      { cmd: 'delete-project', desc: 'Purge specified project: delete-project [slug].' },
       { cmd: 'power-overclock', desc: 'Boost UI luminance and voltage by +50%.' },
       { cmd: 'power-undervolt', desc: 'Lower system power draw to low-spec monochrome.' },
       { cmd: 'power-reset', desc: 'Reset power states and restore default cyan theme.' },
-      { cmd: 'self-destruct', desc: 'Arm core meltdown countdown.' },
+      { cmd: 'change-color [CODE]', desc: 'Set theme palette (CYAN, AMBER, RED, GREEN, PURPLE, WHITE).' },
       { cmd: 'matrix', desc: 'Stream 100 continuous lines with green matrix rain.' },
-      { cmd: 'change-color [CODE]', desc: 'Set theme palette (CYAN, AMBER, RED, GREEN, PURPLE, WHITE).' }
+      { cmd: 'self-destruct', desc: 'Arm core meltdown countdown & visible destruction.' },
+      { cmd: 'radar', desc: 'Open tactical skill radar in operator profile.' },
+      { cmd: 'disable-effects', desc: 'Pause matrix stream & high-GPU canvas loops.' },
+      { cmd: 'enable-effects', desc: 'Resume matrix stream & visual telemetry.' },
+      { cmd: 'cls', desc: 'Purge terminal scrollback buffer.' },
+      { cmd: 'clear', desc: 'Alias for cls.' },
+      { cmd: 'reset', desc: 'Close all secondary windows & reset clearance.' },
+      { cmd: 'restart', desc: 'Trigger 5s hardware reboot sequence.' },
+      { cmd: 'reboot', desc: 'Alias for restart.' },
+      { cmd: 'shutdown', desc: 'Alias for restart.' },
+      { cmd: 'exit', desc: 'Terminate terminal session.' },
+      { cmd: 'quit', desc: 'Alias for exit.' },
+      { cmd: 'login', desc: 'Elevate security clearance (admin / user / guest).' },
+      { cmd: 'auth', desc: 'Alias for login.' },
+      { cmd: 'add-money', desc: 'Trigger offshore wire transfer to Cayman account.' },
+      { cmd: 'add-content', desc: 'Flood workspace with classified intelligence files.' },
+      { cmd: 'list-users', desc: 'Query registered accounts in passwd database.' }
     ];
-
-    if (this.authState === 'AUTHENTICATED' && this.currentRole === 'admin') {
-      return [...tier0, ...tier1, ...tier2];
-    } else if (this.authState === 'AUTHENTICATED' && (this.currentRole === 'guest' || this.currentRole === 'user')) {
-      return [...tier0, ...tier1];
-    }
-    return tier0;
   }
 
   executeCommand(command, args, fullArgString) {
@@ -382,7 +382,7 @@ export class TerminalShell {
         this.printLine('  * guest    (Restricted Terminal Clearance)');
         break;
 
-      case 'send-greetings':
+      case 'send-msg':
         window.dispatchEvent(new CustomEvent('app:open-contact', {
           detail: {
             subject: `Greetings from [${this.currentRole.toUpperCase()}]`,
@@ -390,6 +390,11 @@ export class TerminalShell {
           }
         }));
         this.printLine('CONTACT PROTOCOL INITIATED. MODAL DISPATCH READY.', 'output-success');
+        break;
+
+      case 'radar':
+        window.dispatchEvent(new CustomEvent('app:open-profile'));
+        this.printLine('SKILL RADAR LOCATED WITHIN OPERATOR PROFILE. BUFFER OPENED.', 'output-success');
         break;
 
       case 'ls': {
@@ -463,11 +468,11 @@ export class TerminalShell {
         break;
 
       case 'add-project':
-        this.executeAddProject(fullArgString);
+        this.executeAddProject();
         break;
 
-      case 'delete-content':
-        this.executeDeleteContent(args[0]);
+      case 'delete-project':
+        this.executeDeleteProject(args[0]);
         break;
 
       case 'power-overclock':
@@ -511,19 +516,38 @@ export class TerminalShell {
         this.executeMatrixCompilation();
         break;
 
-      case 'change-color': {
-        const colorArg = (args[0] || '').trim().toLowerCase();
-        if (!colorArg) {
-          this.printLine("USAGE: change-color [CODE] (e.g. change-color AMBER)", 'output-warn');
+      case 'change-color':
+      case 'color':
+      case 'theme':
+      case 'set-theme': {
+        if (args.length === 0) {
+          this.printLine("USAGE: change-color [CODE]  ODER  change-color [window] [CODE]", 'output-warn');
           this.printLine(`AVAILABLE CODES: ${windowManager.themes.map((t) => t.toUpperCase()).join(', ')}`, 'output-info');
           sound.playWarningBeep();
-        } else {
+        } else if (args.length === 1) {
+          const colorArg = (args[0] || '').trim().toLowerCase();
           const res = windowManager.setGlobalTheme(colorArg);
           if (res.error) {
             this.printLine(res.error, 'output-error');
             sound.playAccessDenied();
           } else {
             this.printLine(`CYBERPUNK THEME PALETTE SET TO: [${res.theme.toUpperCase()}].`, 'output-success');
+            sound.playAccessGranted();
+          }
+        } else {
+          // 2 args: target specific window
+          const targetWin = args[0].trim();
+          const colorArg = args[1].trim().toLowerCase();
+          const win = windowManager.getWindow(targetWin);
+          if (!win) {
+            this.printLine(`ERROR: WINDOW '${targetWin}' NOT FOUND.`, 'output-error');
+            sound.playAccessDenied();
+          } else if (!windowManager.themes.includes(colorArg)) {
+            this.printLine(`ERROR: UNKNOWN COLOR '${colorArg}'. VALID: ${windowManager.themes.join(', ')}`, 'output-error');
+            sound.playAccessDenied();
+          } else {
+            windowManager.setTheme(targetWin, colorArg);
+            this.printLine(`WINDOW '${targetWin}' THEME SET TO: [${colorArg.toUpperCase()}].`, 'output-success');
             sound.playAccessGranted();
           }
         }
@@ -610,72 +634,54 @@ export class TerminalShell {
     }
   }
 
-  // Synthesize Skynet Repo Easter-Egg
-  executeAddProject(customName) {
-    let projectTitle = customName;
-    let projectSlug = '';
+  // Add Empty Dummy Project "New repo - push to initialize"
+  executeAddProject() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const monthNames = [
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+    ];
+    const monthName = monthNames[now.getMonth()];
+    const dateDisplay = `${monthName} ${year}`;
+    const slug = `uninit-repo-${Date.now()}`;
 
-    if (!projectTitle) {
-      const template = this.skynetPool[this.skynetIndex % this.skynetPool.length];
-      this.skynetIndex++;
-      projectTitle = template.title;
-      projectSlug = template.slug;
-    } else {
-      projectSlug = projectTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    }
+    const dummyProject = {
+      slug,
+      title: 'New repo - push to initialize',
+      category: 'Uninitialized / Empty',
+      status: 'OFFLINE',
+      visibility: 'PRIVATE',
+      development: 'WIP',
+      startDate: `${year}-${month}`,
+      dateDisplay,
+      highlight: 'Leere Repository-Hülle. Warte auf initialen Git-Push zur Synchronisierung...',
+      tags: ['Git', 'Uninitialized', 'Dummy'],
+      isDummy: true,
+      media: [{
+        type: 'image',
+        url: 'assets/img/projects/placeholder.svg',
+        thumb: 'assets/img/projects/placeholder.svg',
+        caption: 'Empty Repo Placeholder'
+      }],
+      links: [],
+      content: ''
+    };
 
-    const modalId = `synth-${Date.now()}`;
-    windowManager.createWindow({
-      id: modalId,
-      title: 'SYS//SYNTHESIS: NEW REPO',
-      contentHtml: `
-        <div style="padding: 20px; font-family: 'Oxanium', monospace;">
-          <div style="color: #00e5ff; margin-bottom: 12px; font-size: 13px;">SYNTHESIZING NEW REPOSITORY ARCHIVE...</div>
-          <div style="background: rgba(0,0,0,0.5); border: 1px solid #00e5ff; height: 18px; border-radius: 2px; overflow: hidden;">
-            <div id="synth-bar" style="width: 0%; height: 100%; background: #00e5ff; transition: width 0.1s linear;"></div>
-          </div>
-          <div id="synth-label" style="color: #94a3b8; font-size: 11px; margin-top: 8px;">0% COMPLETED</div>
-        </div>
-      `,
-      width: 420,
-      height: 180
-    });
+    dataLoader.addProject(dummyProject);
 
-    sound.playWarningBeep();
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      const bar = document.getElementById('synth-bar');
-      const label = document.getElementById('synth-label');
-      if (bar) bar.style.width = `${progress}%`;
-      if (label) label.textContent = `${progress}% COMPLETED`;
+    // Notify UI & open project-explorer window
+    window.dispatchEvent(new CustomEvent('project:added', { detail: { project: dummyProject } }));
 
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          windowManager.closeWindow(modalId);
-          dataLoader.addProject({
-            slug: projectSlug,
-            title: projectTitle,
-            category: "Autonomous / Skynet Labs",
-            status: "SYNTHESIZED // ACTIVE",
-            highlight: "Experimentelle autonome System-Komponente.",
-            tags: ["Skynet", "Toaster-OS", "AI", "Quantum"],
-            features: ["Neural Override", "Lethal Precision", "Toast Verification"],
-            media: [{ type: "image", url: "data/img/projects/placeholder.svg", caption: "Neural Toaster Flow" }],
-            links: [{ label: "GitHub", url: "https://github.com" }],
-            content: `### ${projectTitle}\n\nAutomatisch erzeugtes Experimentelles Repository aus den Skynet Labs.`
-          });
-          this.printLine(`REPO SYNTHESIS COMPLETE: '${projectTitle}' REGISTERED.`, 'output-success');
-          sound.playAccessGranted();
-        }, 500);
-      }
-    }, 150);
+    this.printLine(`REPO ALLOCATED: 'New repo - push to initialize' [${dateDisplay}].`, 'output-success');
+    this.printLine(`STATUS: DUMMY BUFFER INSERTED INTO PROJECT TIMELINE.`, 'output-info');
+    sound.playAccessGranted();
   }
 
-  // Delete Content Easter-Egg
-  executeDeleteContent(targetSlug) {
-    let slug = targetSlug;
+  // Delete Project & Sync Live with Explorer
+  executeDeleteProject(targetSlug) {
+    let slug = (targetSlug || '').trim();
     if (!slug) {
       // Find currently focused project window
       const windows = windowManager.getAllWindows();
@@ -686,12 +692,22 @@ export class TerminalShell {
     }
 
     if (!slug) {
-      this.printLine("NO ACTIVE PROJECT WINDOW DETECTED. SPECIFY: delete-content [slug]", 'output-warn');
+      this.printLine("NO ACTIVE PROJECT SPECIFIED. USAGE: delete-project [slug]", 'output-warn');
       sound.playWarningBeep();
       return;
     }
 
     const removed = dataLoader.removeProject(slug);
+    if (!removed) {
+      this.printLine(`ERROR: PROJECT '${slug}' NOT FOUND IN REGISTRY.`, 'output-error');
+      sound.playAccessDenied();
+      return;
+    }
+
+    // Notify UI & open project-explorer window to remove card
+    window.dispatchEvent(new CustomEvent('project:deleted', { detail: { slug } }));
+
+    // If an open project window exists, mark as expunged
     const win = windowManager.getWindow(`proj-${slug}`);
     if (win) {
       const body = win.element.querySelector('.cyber-window-body');
@@ -699,7 +715,7 @@ export class TerminalShell {
         body.innerHTML = `
           <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255, 0, 85, 0.25); color: #ff0055; font-family: 'Oxanium', monospace;">
             <div style="font-size: 26px; font-weight: bold; letter-spacing: 2px;">CONTENT REMOVED</div>
-            <div style="font-size: 12px; color: #cbd5e1; margin-top: 8px;">SECURITY PROTOCOL: RECORD EXPUNGED BY ROOT OPERATOR</div>
+            <div style="font-size: 12px; color: #cbd5e1; margin-top: 8px;">SECURITY PROTOCOL: RECORD EXPUNGED BY OPERATOR</div>
           </div>
         `;
         windowManager.setTheme(win.id, 'red');
@@ -710,13 +726,22 @@ export class TerminalShell {
     sound.playAccessDenied();
   }
 
-  // Self Destruct Sequence
+  // Self Destruct Sequence with Red Pulsating Screen, Background Siren & Glitch Dissolution
   executeSelfDestruct() {
     windowManager.getAllWindows().forEach((w) => {
       windowManager.setTheme(w.id, 'red');
     });
 
-    sound.playAlarmSweep();
+    // Mount pulsating red alarm overlay on screen
+    let overlay = document.getElementById('self-destruct-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'self-destruct-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    // Start pulsing emergency siren in background
+    const stopSiren = sound.startSiren();
 
     const modalId = 'self-destruct-modal';
     windowManager.createWindow({
@@ -725,7 +750,7 @@ export class TerminalShell {
       contentHtml: `
         <div style="padding: 24px; text-align: center; font-family: 'Oxanium', monospace; color: #ff0055;">
           <div style="font-size: 16px; font-weight: bold; letter-spacing: 2px;">CORE BREACH IMMINENT</div>
-          <div id="destruct-counter" style="font-size: 64px; font-weight: 800; margin: 12px 0; text-shadow: 0 0 20px #ff0055;">5</div>
+          <div id="destruct-counter" style="font-size: 64px; font-weight: 800; margin: 12px 0; text-shadow: 0 0 24px #ff0055;">5</div>
           <div style="font-size: 11px; color: #cbd5e1;">EVACUATE VIRTUAL SECTOR IMMEDIATELY</div>
         </div>
       `,
@@ -742,14 +767,37 @@ export class TerminalShell {
 
       if (count <= 0) {
         clearInterval(interval);
-        document.body.classList.add('crt-collapse-active');
+        // Stop siren and trigger violent destruction phase
+        stopSiren();
+        sound.playGlitchDistortion();
+
+        // 1. Violent Screen Glitch, Shake & Scanline Dissolution
+        document.body.classList.add('destruct-destruction-active');
+        let tearOverlay = document.getElementById('destruct-dissolution');
+        if (!tearOverlay) {
+          tearOverlay = document.createElement('div');
+          tearOverlay.id = 'destruct-dissolution';
+          tearOverlay.className = 'destruct-dissolution-overlay';
+          document.body.appendChild(tearOverlay);
+        }
+
+        // 2. After 1.6s of visible destruction -> CRT Collapse
         setTimeout(() => {
-          document.body.style.background = '#000000';
-          document.body.innerHTML = '';
+          document.body.classList.remove('destruct-destruction-active');
+          if (tearOverlay) tearOverlay.remove();
+          if (overlay) overlay.remove();
+
+          document.body.classList.add('crt-collapse-active');
+
+          // 3. Screen turns pitch black
           setTimeout(() => {
-            window.location.reload();
-          }, 5000);
-        }, 650);
+            document.body.style.background = '#000000';
+            document.body.innerHTML = '';
+            setTimeout(() => {
+              window.location.reload();
+            }, 3500);
+          }, 650);
+        }, 1600);
       }
     }, 1000);
   }

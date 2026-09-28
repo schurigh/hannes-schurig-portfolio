@@ -188,25 +188,6 @@ class App {
         icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
       },
       {
-        id: 'radar',
-        title: 'Skill Radar',
-        action: () => this.openRadarWindow(),
-        icon: `<svg class="w-full h-full p-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <defs>
-            <linearGradient id="radar-sweep-icon-grad" x1="12" y1="12" x2="20" y2="6" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="currentColor" stop-opacity="0.45" />
-              <stop offset="100%" stop-color="currentColor" stop-opacity="0.05" />
-            </linearGradient>
-          </defs>
-          <circle cx="12" cy="12" r="9.2" stroke-width="1.8" />
-          <circle cx="12" cy="12" r="4.8" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="1.5 1.5" />
-          <path d="M12 12 L20.2 8.2 A 9.2 9.2 0 0 0 17.5 4.8 Z" fill="url(#radar-sweep-icon-grad)" stroke="none" />
-          <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
-          <line x1="12" y1="12" x2="17.5" y2="4.8" stroke-width="1.8" stroke-linecap="round" />
-          <circle cx="15.8" cy="7.2" r="0.9" fill="currentColor" stroke="none" />
-        </svg>`
-      },
-      {
         id: 'contact',
         title: 'Kontakt',
         action: () => this.openContactModal(),
@@ -472,9 +453,16 @@ class App {
   renderProjectBadges(p) {
     const badges = [];
 
-    // 1. Status: ONLINE (green pulsating dot) / OFFLINE (red static dot)
+    // 1. Status: ONLINE (green pulsating dot) / OFFLINE (red static dot) / PAUSED (rot-orange dot)
     const rawStatus = (p.status || '').trim().toUpperCase();
-    if (rawStatus.includes('OFFLINE')) {
+    if (rawStatus.includes('PAUSED') || rawStatus.includes('HOLD')) {
+      badges.push(`
+        <span class="project-badge badge-status-paused" title="System-Status: Pausiert">
+          <span class="badge-dot-paused"></span>
+          <span>${escapeHtml(p.status)}</span>
+        </span>
+      `);
+    } else if (rawStatus.includes('OFFLINE')) {
       badges.push(`
         <span class="project-badge badge-status-offline" title="System-Status: Offline">
           <span class="badge-dot-static"></span>
@@ -528,7 +516,7 @@ class App {
       `);
     }
 
-    // 3. Development: FINISHED (check SVG) / BETA, CLOSED (ban SVG) / BETA, WIP (amber hammer) / PROD, WIP (cyan hammer)
+    // 3. Development: FINISHED / BETA, PAUSED / BETA, CLOSED / BETA, WIP / PROD, WIP
     const rawDev = (p.development || '').trim().toUpperCase();
     if (rawDev.includes('FINISHED') || rawDev.includes('FINAL')) {
       badges.push(`
@@ -537,6 +525,16 @@ class App {
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
           <span>FINISHED</span>
+        </span>
+      `);
+    } else if (rawDev.includes('PAUSED') || rawDev.includes('HOLD')) {
+      badges.push(`
+        <span class="project-badge badge-dev-paused" title="Entwicklungsstatus: Beta, Pausiert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="4" width="4" height="16" fill="currentColor"></rect>
+            <rect x="14" y="4" width="4" height="16" fill="currentColor"></rect>
+          </svg>
+          <span>${escapeHtml(p.development)}</span>
         </span>
       `);
     } else if (rawDev.includes('CLOSED')) {
@@ -607,9 +605,51 @@ class App {
     const renderCard = (p) => {
       const imgUrl = (p.media && p.media.length > 0)
         ? (p.media[0].thumb || p.media[0].url)
-        : 'data/img/projects/placeholder.svg';
+        : 'assets/img/projects/placeholder.svg';
 
       const monthName = (p.dateDisplay || '').split(' ')[0] || '';
+
+      if (p.isDummy) {
+        return `
+          <div class="timeline-item timeline-dummy-item" data-slug="${p.slug}">
+            <div class="timeline-connector">
+              <div class="timeline-node-dot !bg-amber-400 !border-amber-300"></div>
+              <div class="timeline-branch-line !border-amber-500/50"></div>
+              <span class="timeline-branch-month text-amber-300">${escapeHtml(monthName)}</span>
+            </div>
+            <div class="timeline-card !border-dashed !border-amber-500/40 !bg-black/60 cursor-default opacity-85 hover:!border-amber-400">
+              <div class="timeline-card-media !bg-gray-950 flex items-center justify-center p-3">
+                <div class="w-12 h-12 rounded border border-dashed border-amber-500/40 flex items-center justify-center text-amber-400 font-mono text-xl">
+                  +
+                </div>
+              </div>
+              <div class="timeline-card-body">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <h3 class="timeline-card-title text-amber-300 font-mono">${escapeHtml(p.title)}</h3>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border border-red-500/40 bg-red-950/40 text-red-300 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                        OFFLINE
+                      </span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border border-gray-500/40 bg-gray-900/60 text-gray-300 flex items-center gap-1">
+                        🔒 PRIVATE
+                      </span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-mono border border-amber-500/40 bg-amber-950/40 text-amber-300 flex items-center gap-1">
+                        🔨 WIP
+                      </span>
+                    </div>
+                  </div>
+                  <p class="timeline-card-desc text-gray-400">${escapeHtml(p.highlight || '')}</p>
+                </div>
+                <div class="flex items-center justify-end text-[11px] text-amber-400/80 font-mono pt-1">
+                  <span>[ PUSH TO INITIALIZE ]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       return `
         <div class="timeline-item" data-slug="${p.slug}">
@@ -645,7 +685,7 @@ class App {
         <div class="flex items-center justify-between px-3 py-2 border-b border-cyan-500 border-opacity-25 bg-black bg-opacity-40 flex-shrink-0">
           <div class="flex items-center gap-2">
             <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">CIRCUIT TIMELINE STREAM</span>
-            <span class="text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${sortedProjects.length} PROJEKTE</span>
+            <span class="projects-count-badge text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${sortedProjects.length} PROJEKTE</span>
           </div>
           <div class="flex items-center gap-2 font-mono text-xs">
             <span class="text-gray-400 text-[10px]">SPRUNG:</span>
@@ -702,8 +742,9 @@ class App {
     // Attach click events on each timeline card to open project details
     const cards = win.element.querySelectorAll('.timeline-card');
     cards.forEach((card) => {
+      const item = card.closest('.timeline-item');
+      if (item?.classList.contains('timeline-dummy-item')) return;
       card.addEventListener('click', () => {
-        const item = card.closest('.timeline-item');
         const slug = item?.dataset.slug;
         if (slug) {
           sound.playKeyClick();
@@ -724,6 +765,54 @@ class App {
         }
       });
     });
+
+    // Live Sync: Add dummy project when terminal add-project is run
+    const onProjectAdded = (e) => {
+      const p = e.detail?.project;
+      if (!p) return;
+      const streamWrapper = win.element.querySelector('.timeline-stream-wrapper');
+      if (!streamWrapper) return;
+
+      const temp = document.createElement('div');
+      temp.innerHTML = renderCard(p);
+      const newCardEl = temp.firstElementChild;
+      if (newCardEl) {
+        newCardEl.style.animation = 'fadeIn 0.5s ease-out';
+        streamWrapper.appendChild(newCardEl);
+        newCardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      const countBadge = win.element.querySelector('.projects-count-badge');
+      if (countBadge) {
+        countBadge.textContent = `${dataLoader.getProjects().length} PROJEKTE`;
+      }
+    };
+
+    // Live Sync: Remove project card when terminal delete-project is run
+    const onProjectDeleted = (e) => {
+      const slug = e.detail?.slug;
+      if (!slug) return;
+      const cardEl = win.element.querySelector(`.timeline-item[data-slug="${slug}"]`);
+      if (cardEl) {
+        cardEl.style.transition = 'all 0.4s ease';
+        cardEl.style.opacity = '0';
+        cardEl.style.transform = 'translateX(30px)';
+        setTimeout(() => cardEl.remove(), 400);
+      }
+
+      const countBadge = win.element.querySelector('.projects-count-badge');
+      if (countBadge) {
+        countBadge.textContent = `${dataLoader.getProjects().length} PROJEKTE`;
+      }
+    };
+
+    window.addEventListener('project:added', onProjectAdded);
+    window.addEventListener('project:deleted', onProjectDeleted);
+
+    win.onClose = () => {
+      window.removeEventListener('project:added', onProjectAdded);
+      window.removeEventListener('project:deleted', onProjectDeleted);
+    };
   }
 
   // Open Project Detail Window (3-Box Layout: 1. Overview/Hero, 2. Gallery, 3. Deep Dive & Highlights)
@@ -1076,6 +1165,29 @@ class App {
           </div>
           ` : ''}
 
+          <!-- Tactical Skill Radar Section -->
+          ${(profile.radar_skills && profile.radar_skills.length > 0) ? `
+          <div class="mt-6 pt-5 border-t border-cyan-500 border-opacity-30">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-cyan-400 font-bold font-mono tracking-wider">TACTICAL SKILL RADAR // TELEMETRIE SCAN</span>
+                <span class="text-[10px] px-2 py-0.5 border border-cyan-500 border-opacity-30 text-cyan-300 rounded font-mono">${profile.radar_skills.length} TARGETS</span>
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono hidden sm:block">// 360° LIVE MATRIX HUD</div>
+            </div>
+            <div class="relative w-full rounded border border-cyan-500 border-opacity-25 bg-black bg-opacity-60 overflow-hidden flex flex-col items-center p-3 shadow-[inset_0_0_20px_rgba(0,229,255,0.06)]">
+              <canvas id="profile-radar-canvas" width="840" height="580" style="max-width: 100%; height: auto; border: 1px solid rgba(0,229,255,0.2); background: rgba(2,6,23,0.8); border-radius: 4px; box-shadow: 0 0 16px rgba(0,229,255,0.1);"></canvas>
+              <div class="text-[10px] text-cyan-400 font-mono mt-2.5 flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+                <span>● 360° SENSOR ARRAY</span>
+                <span class="text-gray-500">//</span>
+                <span>SECTOR 0x7F</span>
+                <span class="text-gray-500">//</span>
+                <span class="text-emerald-400 font-bold">${profile.radar_skills.length} TARGETS LOCKED</span>
+              </div>
+            </div>
+          </div>
+          ` : ''}
+
           <!-- Career & Job Experience Timeline (CV) -->
           <div class="mt-6 pt-5 border-t border-cyan-500 border-opacity-30">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -1118,12 +1230,12 @@ class App {
                               const typeStr = att.type ? `<span class="text-[9px] opacity-75">(${escapeHtml(att.type)})</span>` : '';
                               return `
                                 <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="job-attachment-btn">
-                                  <span>${icon}</span>
-                                  <span>${escapeHtml(att.title || att.name || 'Dokument')}</span>
-                                  ${typeStr}
-                                  <span class="text-[10px]">↗</span>
-                                </a>
-                              `;
+                                   <span>${icon}</span>
+                                   <span>${escapeHtml(att.title || att.name || 'Dokument')}</span>
+                                   ${typeStr}
+                                   <span class="text-[10px]">↗</span>
+                                 </a>
+                               `;
                             }).join('')}
                           </div>
                         ` : ''}
@@ -1137,8 +1249,19 @@ class App {
         </div>
       `,
       width: Math.min(1020, Math.max(840, Math.round(window.innerWidth * 0.7))),
-      height: Math.min(Math.max(680, Math.round(window.innerHeight * 0.85)), Math.max(620, Math.round(window.innerHeight * 0.75)))
+      height: Math.min(Math.max(680, Math.round(window.innerHeight * 0.85)), Math.max(620, Math.round(window.innerHeight * 0.75))),
+      onClose: () => {
+        if (radarInstance) radarInstance.destroy();
+      }
     });
+
+    // Initialize embedded Skill Radar HUD
+    let radarInstance = null;
+    const profileRadarCanvas = win.element.querySelector('#profile-radar-canvas');
+    if (profileRadarCanvas && profile.radar_skills?.length) {
+      radarInstance = new RadarHUD(profileRadarCanvas, profile.radar_skills);
+      radarInstance.start();
+    }
 
     // Handle E-Mail click to open encrypted dispatch contact modal
     const mailBtn = win.element.querySelector('.btn-open-contact');
