@@ -6,15 +6,20 @@
 data/config.php
 data/profile.json
 data/projects.json
+data/documents_extracted.json
+data/system_prompt.php
+data/.key_state.json
+data/.rate_limits.json
 # Ignore private media in data/img/, allow example media
 data/img/**
 !data/img/**/
 !data/img/**/*example*
 
-# Ignore private documents/attachments in data/files/, allow example files
+# Ignore private documents/attachments in data/files/, allow example files & setup readme
 data/files/**
 !data/files/**/
 !data/files/**/*example*
+!data/files/AI-COMM-Chat-Setup-Readme.txt
 
 
 config.php

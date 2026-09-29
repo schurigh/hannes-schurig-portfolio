@@ -24,7 +24,7 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>CyberDeck Portfolio // SecOps-UI</title>
+  <title>CyberDeck OS // Interaktives Portfolio</title>
   
   <!-- SEO & Cyber Meta Tags -->
   <meta name="description" content="Interaktives CyberDeck Portfolio OS & Command Center. Vibecoding, AI Orchestration & Creative Engineering.">
@@ -32,7 +32,7 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
   <meta name="csrf-token" content="<?= $csrfToken ?>">
   <meta name="profile-source" content="<?= $profileFile ?>">
   <meta name="projects-source" content="<?= $projectsFile ?>">
-  <meta property="og:title" content="CyberDeck // SecOps-UI Portfolio">
+  <meta property="og:title" content="CyberDeck OS // Interaktives Portfolio">
   <meta property="og:description" content="Interaktives Cyber-War-Room Portfolio im Terminal- und Fake-OS-Stil.">
   <meta property="og:type" content="website">
 
@@ -40,8 +40,9 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
   <link rel="stylesheet" href="assets/css/tailwind.min.css">
   <link rel="stylesheet" href="assets/css/cyber-theme.css?v=<?= $cssVersion ?>">
 
-  <!-- Local Markdown Parser -->
+  <!-- Local Markdown Parser & DOM Purifier -->
   <script src="assets/js/vendor/marked.min.js"></script>
+  <script src="assets/js/vendor/purify.min.js"></script>
 </head>
 <body class="text-gray-100 antialiased select-none" style="background-color: #020712;">
 
@@ -108,7 +109,7 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
               </a>
               <div class="text-gray-400 flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Stand: 26.09.2026</span>
+                <span>Stand: 29.09.2026</span>
               </div>
             </div>
           </div>
@@ -120,26 +121,78 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
   <!-- Desktop Context Menu (Right Click) -->
   <div id="cyber-context-menu">
     <div id="ctx-new-terminal" class="context-menu-item">
-      <span>&gt;_</span>
-      <span>New Terminal</span>
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5"></polyline>
+          <line x1="12" y1="19" x2="20" y2="19"></line>
+        </svg>
+      </span>
+      <span class="context-menu-text">New Terminal</span>
     </div>
     <div id="ctx-arrange-windows" class="context-menu-item">
-      <span>▤</span>
-      <span>Arrange Windows</span>
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="7" y="7" width="14" height="14" rx="1.5" />
+          <path d="M17 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" />
+        </svg>
+      </span>
+      <span class="context-menu-text">Arrange Windows</span>
     </div>
     <div class="context-menu-separator"></div>
     <div id="ctx-toggle-sound" class="context-menu-item">
-      <span>♪</span>
-      <span>Toggle Audio</span>
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </span>
+      <span class="context-menu-text">Toggle Audio</span>
     </div>
     <div id="ctx-toggle-matrix" class="context-menu-item">
-      <span>░</span>
-      <span>Toggle Matrix Stream</span>
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h4v4H4zM16 4h4v4h-4zM10 10h4v4h-4zM4 16h4v4H4zM16 16h4v4h-4z" />
+        </svg>
+      </span>
+      <span class="context-menu-text">Toggle Matrix Stream</span>
+    </div>
+    <div class="context-menu-separator"></div>
+    <div id="ctx-system-info" class="context-menu-item">
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </span>
+      <span class="context-menu-text">System Info</span>
+    </div>
+    <div id="ctx-report-bug" class="context-menu-item">
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="8" height="14" x="8" y="6" rx="4" />
+          <path d="m19 7-3 2" />
+          <path d="m5 7 3 2" />
+          <path d="m19 19-3-2" />
+          <path d="m5 19 3-2" />
+          <path d="M20 13h-4" />
+          <path d="M4 13h4" />
+          <path d="m10 4 1 2" />
+          <path d="m14 4-1 2" />
+        </svg>
+      </span>
+      <span class="context-menu-text">Report a bug</span>
     </div>
     <div class="context-menu-separator"></div>
     <div id="ctx-reboot" class="context-menu-item" style="color: #f87171;">
-      <span>⚠</span>
-      <span>System Reboot</span>
+      <span class="context-menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </span>
+      <span class="context-menu-text">System Reboot</span>
     </div>
   </div>
 

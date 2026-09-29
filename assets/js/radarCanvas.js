@@ -13,15 +13,22 @@ export class RadarHUD {
     this.angle = 0;
     this.animId = null;
     this.running = false;
+    this.isPausedByVisibility = false;
     this.lastTime = 0;
     this.fps = 30;
     this.interval = 1000 / this.fps;
 
     this.handleVisibility = () => {
       if (document.hidden) {
-        this.stop();
-      } else if (this.running) {
-        this.start();
+        if (this.running) {
+          this.isPausedByVisibility = true;
+          this.stop();
+        }
+      } else if (this.isPausedByVisibility) {
+        this.isPausedByVisibility = false;
+        if (this.canvas && this.canvas.isConnected) {
+          this.start();
+        }
       }
     };
     document.addEventListener('visibilitychange', this.handleVisibility);
@@ -47,6 +54,7 @@ export class RadarHUD {
   }
 
   destroy() {
+    this.isPausedByVisibility = false;
     this.stop();
     document.removeEventListener('visibilitychange', this.handleVisibility);
   }

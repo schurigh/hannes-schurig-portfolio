@@ -210,6 +210,31 @@ class SoundEngine {
     } catch (e) {}
   }
 
+  // Futuristic cyber communication transmission chirp
+  playMessageSent() {
+    if (!this.ensureReady()) return;
+    try {
+      const now = this.ctx.currentTime;
+      [880, 1320, 1760].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.045);
+
+        gain.gain.setValueAtTime(0.14, now + idx * 0.045);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.045 + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(now + idx * 0.045);
+        osc.stop(now + idx * 0.045 + 0.12);
+        setTimeout(() => osc.disconnect(), 250);
+      });
+    } catch (e) {}
+  }
+
   // Low warning clack tone for countdowns
   playCountdownBeep() {
     if (!this.ensureReady()) return;

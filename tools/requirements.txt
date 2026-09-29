@@ -1,0 +1,18 @@
+# =============================================================================
+# CYBERDECK PORTFOLIO - Dependencies für lokale Dokumenten- & Textextraktion
+# Installation: pip install -r tools/requirements.txt
+# =============================================================================
+
+# PDF- & Dokumenten-Parsing (Cross-Platform: Windows, Linux, macOS)
+pymupdf>=1.24.0
+
+# Bildverarbeitung (Cross-Platform)
+Pillow>=10.0.0
+
+# Windows 10/11 Built-in OCR (nur auf Windows erforderlich, 100% offline)
+winocr>=0.0.15; platform_system == "Windows"
+
+# Tesseract OCR Wrapper (für Linux / macOS oder Windows als Fallback)
+# Erfordert auf Linux: sudo apt install tesseract-ocr tesseract-ocr-deu
+# Erfordert auf macOS: brew install tesseract tesseract-lang
+pytesseract>=0.3.10

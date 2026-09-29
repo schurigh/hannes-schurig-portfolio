@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-09-28T12:00:00+02:00",
+  "documents": {
+    "data/files/example_cert.pdf": {
+      "file": "data/files/example_cert.pdf",
+      "filename": "example_cert.pdf",
+      "file_type": "PDF",
+      "file_size_bytes": 330,
+      "pages": 1,
+      "extracted_at": "2026-09-28T12:00:00+02:00",
+      "extraction_method": "pymupdf_text",
+      "char_count": 180,
+      "content": "### [Seite 1/1]\n\nZertifikat: Beispiel-Zertifizierung IT-Operations\nHerr Max Mustermann hat den Lehrgang erfolgreich abgeschlossen.\nSchwerpunkte: Systemadministration, Automatisierung und IT-Support."
+    },
+    "data/files/example_ref.pdf": {
+      "file": "data/files/example_ref.pdf",
+      "filename": "example_ref.pdf",
+      "file_type": "PDF",
+      "file_size_bytes": 330,
+      "pages": 1,
+      "extracted_at": "2026-09-28T12:00:00+02:00",
+      "extraction_method": "pymupdf_text",
+      "char_count": 210,
+      "content": "### [Seite 1/1]\n\nQualifiziertes Arbeitszeugnis: TechCorp GmbH\nHerr Max Mustermann war von 2020 bis 2024 als Fullstack Developer tätig.\nEr hat seine Aufgaben stets zu unserer vollsten Zufriedenheit erledigt."
+    }
+  }
+}

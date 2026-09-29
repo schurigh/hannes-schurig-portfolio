@@ -12,6 +12,7 @@ import { windowManager } from './windowManager.js';
 import { TerminalShell } from './terminal.js';
 import { RadarHUD } from './radarCanvas.js';
 import { lightboxViewer } from './lightbox.js';
+import { agentComm } from './agentComm.js';
 
 /**
  * Escape user-supplied strings before inserting into innerHTML to prevent XSS.
@@ -135,29 +136,32 @@ class App {
       id: 'onboarding-notice',
       title: 'SEC//SYS: SYSTEM START',
       contentHtml: `
-        <div style="font-family:'Oxanium',monospace; padding: 12px 6px;">
-          <div style="color: #00e5ff; font-weight: 700; font-size: 15px; margin-bottom: 8px; letter-spacing: 1px;">WILLKOMMEN IM CYBERDECK</div>
-          <p style="color: #cbd5e1; line-height: 1.65; margin-bottom: 14px; font-size: 13px;">
-            Du kannst mit diesem virtuellen Desktop frei interagieren. Starte Anwendungen über die Taskleiste unten, 
-            die Desktop-Icons oder gib Befehle in die Terminal-Shell ein.
+        <div style="font-family:'Oxanium',monospace; padding: 4px 2px;">
+          <div style="color: #00e5ff; font-weight: 700; font-size: 15px; margin-bottom: 12px; letter-spacing: 1px;">WILLKOMMEN IM CYBERDECK OS</div>
+          <p style="color: #cbd5e1; line-height: 1.6; margin-bottom: 10px; font-size: 13px;">
+            Du kannst mit diesem virtuellen Desktop frei interagieren. Starte Anwendungen über die Desktop-Icons oder über die Terminal-Shell. Auf diese Weise kannst du mehr über dieses System, angegliederte Systeme und den Operator herausfinden.
           </p>
-          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 18px;">
-            HINWEIS: Klicke auf 'Terminal' oder drücke <code style="color:#00e5ff; background: rgba(0,229,255,0.1); padding: 2px 5px; border-radius: 2px;">>_</code> für die Kommandozeile.
+          <p style="color: #cbd5e1; line-height: 1.6; margin-bottom: 14px; font-size: 13px;">
+            Nutze die Taskleiste unten oder das Rechtsklickmenü für mehr Kontrolle.
+          </p>
+          <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; border-top: 1px solid rgba(0, 229, 255, 0.15); padding-top: 10px;">
+            <span style="color: #38bdf8; font-weight: 600;">PS:</span> Dieses Projekt ist open-source, falls Du es für Dich selbst nutzen möchtest, mit Deinen eigenen Daten. Unten bei "Info" erfährst Du mehr.
           </div>
           <button id="btn-ack-notice" style="background: rgba(0, 229, 255, 0.2); border: 1px solid #00e5ff; color: #ffffff; padding: 8px 22px; border-radius: 2px; font-family: 'Oxanium', monospace; font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: 1px; transition: all 0.15s ease;">
             [ VERSTANDEN // ACK ]
           </button>
         </div>
       `,
-      width: 460,
-      height: 310,
-      x: (window.innerWidth - 460) / 2,
-      y: (window.innerHeight - 310) / 2
+      width: 480,
+      height: 350,
+      x: (window.innerWidth - 480) / 2,
+      y: (window.innerHeight - 350) / 2
     });
 
     const ackBtn = document.getElementById('btn-ack-notice');
     if (ackBtn) {
       ackBtn.addEventListener('click', () => {
+        sound.playKeyClick();
         windowManager.closeWindow('onboarding-notice');
       });
     }
@@ -171,27 +175,33 @@ class App {
     const shortcuts = [
       {
         id: 'terminal',
-        title: 'Terminal.sh',
+        title: 'TERMINAL',
         action: () => this.openTerminal(),
         icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`
       },
       {
         id: 'projects',
-        title: 'Projekte',
+        title: 'PROJEKTE',
         action: () => this.openProjectsExplorer(),
         icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>`
       },
       {
         id: 'about',
-        title: 'Operator',
+        title: 'OPERATOR',
         action: () => this.openAboutProfile(),
         icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
       },
       {
         id: 'contact',
-        title: 'Kontakt',
+        title: 'KONTAKT',
         action: () => this.openContactModal(),
         icon: `<svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
+      },
+      {
+        id: 'ai-comm',
+        title: 'AI COMM',
+        action: () => this.openAiComm(),
+        icon: `<svg class="w-full h-full p-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h9" /><circle cx="7" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><circle cx="10.5" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><circle cx="14" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><line x1="17" y1="3" x2="22" y2="4" stroke-width="1.2" /><line x1="22" y1="4" x2="21" y2="9" stroke-width="1.2" /><line x1="21" y1="9" x2="16" y2="8" stroke-width="1.2" /><line x1="16" y1="8" x2="17" y2="3" stroke-width="1.2" /><line x1="17" y1="3" x2="21" y2="9" stroke-width="1.2" /><circle cx="17" cy="3" r="1.4" fill="currentColor" stroke="none" /><circle cx="21" cy="9" r="1.4" fill="currentColor" stroke="none" /><circle cx="22" cy="4" r="0.85" fill="currentColor" stroke="none" /><circle cx="16" cy="8" r="0.85" fill="currentColor" stroke="none" /></svg>`
       }
     ];
 
@@ -236,46 +246,32 @@ class App {
     const infoClose = document.getElementById('dock-info-close');
 
     if (infoBtn && infoOverlay) {
-      const toggleInfo = (forceState) => {
-        const isOpen = !infoOverlay.classList.contains('hidden');
-        const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
-
-        if (shouldOpen) {
-          infoOverlay.classList.remove('hidden');
-          infoBtn.classList.add('active');
-          infoBtn.setAttribute('aria-expanded', 'true');
-          sound.playWindowOpen?.();
-        } else {
-          infoOverlay.classList.add('hidden');
-          infoBtn.classList.remove('active');
-          infoBtn.setAttribute('aria-expanded', 'false');
-          sound.playKeyClick?.();
-        }
-      };
-
       infoBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        toggleInfo();
+        this.toggleInfoPopup();
       });
 
       if (infoClose) {
         infoClose.addEventListener('click', (e) => {
           e.stopPropagation();
-          toggleInfo(false);
+          this.toggleInfoPopup(false);
         });
       }
 
-      // Close when clicking outside
+      // Close when clicking outside (excluding dock button and context menu item)
       document.addEventListener('click', (e) => {
-        if (!infoOverlay.classList.contains('hidden') && !infoOverlay.contains(e.target) && !infoBtn.contains(e.target)) {
-          toggleInfo(false);
+        if (!infoOverlay.classList.contains('hidden') && 
+            !infoOverlay.contains(e.target) && 
+            !infoBtn.contains(e.target) && 
+            !e.target.closest('#ctx-system-info')) {
+          this.toggleInfoPopup(false);
         }
       });
 
       // Close on Escape key
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !infoOverlay.classList.contains('hidden')) {
-          toggleInfo(false);
+          this.toggleInfoPopup(false);
         }
       });
     }
@@ -290,6 +286,32 @@ class App {
     });
 
     window.addEventListener('resize', () => this.checkTaskbarOverflow());
+  }
+
+  // Toggle Dock Info Popover Overlay
+  toggleInfoPopup(forceState) {
+    const infoBtn = document.getElementById('dock-btn-info');
+    const infoOverlay = document.getElementById('dock-info-overlay');
+    if (!infoOverlay) return;
+
+    const isOpen = !infoOverlay.classList.contains('hidden');
+    const shouldOpen = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+    if (shouldOpen) {
+      infoOverlay.classList.remove('hidden');
+      if (infoBtn) {
+        infoBtn.classList.add('active');
+        infoBtn.setAttribute('aria-expanded', 'true');
+      }
+      sound.playWindowOpen?.();
+    } else {
+      infoOverlay.classList.add('hidden');
+      if (infoBtn) {
+        infoBtn.classList.remove('active');
+        infoBtn.setAttribute('aria-expanded', 'false');
+      }
+      sound.playKeyClick?.();
+    }
   }
 
   // Windows-style dynamic taskbar rendering
@@ -395,8 +417,8 @@ class App {
       }
       e.preventDefault();
       menu.style.display = 'block';
-      menu.style.left = `${Math.min(e.clientX, window.innerWidth - 200)}px`;
-      menu.style.top = `${Math.min(e.clientY, window.innerHeight - 200)}px`;
+      menu.style.left = `${Math.min(e.clientX, window.innerWidth - 210)}px`;
+      menu.style.top = `${Math.min(e.clientY, window.innerHeight - 300)}px`;
       sound.playKeyClick();
     });
 
@@ -408,8 +430,12 @@ class App {
     document.getElementById('ctx-arrange-windows')?.addEventListener('click', () => windowManager.cascadeWindows());
     document.getElementById('ctx-toggle-sound')?.addEventListener('click', () => sound.toggleMute());
     document.getElementById('ctx-toggle-matrix')?.addEventListener('click', () => matrixRain.toggleEffects(!matrixRain.enabled));
+    document.getElementById('ctx-system-info')?.addEventListener('click', () => this.toggleInfoPopup(true));
+    document.getElementById('ctx-report-bug')?.addEventListener('click', () => {
+      this.openContactModal({ subject: 'Bug Report // CyberDeck OS' });
+    });
     document.getElementById('ctx-reboot')?.addEventListener('click', () => {
-      if (this.terminalInstance) this.terminalInstance.triggerRebootSequence();
+      this.triggerRebootSequence();
     });
   }
 
@@ -422,6 +448,74 @@ class App {
     window.addEventListener('app:open-contact', (e) => {
       this.openContactModal(e.detail || {});
     });
+
+    window.addEventListener('app:open-ai-comm', (e) => {
+      this.openAiComm(e.detail?.prompt || null);
+    });
+
+    window.addEventListener('app:reboot', () => {
+      this.triggerRebootSequence();
+    });
+  }
+
+  // Open AI Agent Communicator (Operator AI Communicator)
+  openAiComm(prompt = null) {
+    agentComm.open(prompt);
+    this.updateTaskbar();
+  }
+
+  // 5s Countdown Hardware Reboot
+  triggerRebootSequence() {
+    if (windowManager.getWindow('reboot-modal')) return;
+
+    sound.playWarningBeep();
+
+    const deskRect = windowManager.desktopArea 
+      ? windowManager.desktopArea.getBoundingClientRect() 
+      : { width: window.innerWidth, height: window.innerHeight - 60 };
+    const winWidth = Math.min(420, deskRect.width - 24);
+    const winHeight = 230;
+    const posX = Math.max(10, Math.round((deskRect.width - winWidth) / 2));
+    const posY = Math.max(10, Math.round((deskRect.height - winHeight) / 2));
+
+    const modalId = 'reboot-modal';
+    windowManager.createWindow({
+      id: modalId,
+      title: 'SYS//WARP: HARDWARE REBOOT',
+      icon: `<svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`,
+      theme: 'red',
+      width: winWidth,
+      height: winHeight,
+      x: posX,
+      y: posY,
+      contentHtml: `
+        <div style="padding: 20px; text-align: center; font-family: 'Oxanium', monospace; color: #f87171;" class="select-none flex flex-col justify-center h-full">
+          <div style="font-size: 13px; font-weight: 700; letter-spacing: 1.5px;">SYSTEM REBOOT IN PROGRESS</div>
+          <div id="reboot-counter" style="font-size: 52px; font-weight: 800; margin: 8px 0; text-shadow: 0 0 16px rgba(248, 113, 113, 0.8);">5</div>
+          <div style="font-size: 11px; color: #94a3b8; letter-spacing: 1px;">CLOSING RUNTIME BUFFER THREADS...</div>
+        </div>
+      `
+    });
+
+    let count = 5;
+    const counterEl = document.getElementById('reboot-counter');
+    const interval = setInterval(() => {
+      count--;
+      if (counterEl) counterEl.textContent = count;
+      sound.playCountdownBeep();
+
+      if (count <= 0) {
+        clearInterval(interval);
+        document.body.classList.add('crt-collapse-active');
+        setTimeout(() => {
+          document.body.style.background = '#000000';
+          document.body.innerHTML = '';
+          setTimeout(() => {
+            window.location.reload();
+          }, 1200);
+        }, 650);
+      }
+    }, 1000);
   }
 
   // Open Terminal Window (with persistent & safe re-mounting)
@@ -1287,6 +1381,110 @@ class App {
         holoImg.style.transform = 'perspective(500px) rotateY(0deg) rotateX(0deg) scale(1)';
       });
     }
+
+    // ============================================================
+    // TEMPORÄR & PERSÖNLICH FÜR HANNES SCHURIG:
+    // Interceptor für Klicks auf "Zertifikate & Auszeichnungen"
+    // ============================================================
+    const attachmentLinks = win.element.querySelectorAll('.operator-attachment-card, .job-attachment-btn');
+    attachmentLinks.forEach((link) => {
+      const href = link.getAttribute('href') || '';
+      const text = link.textContent || '';
+      const isCert = href.toLowerCase().includes('auszeichnungen') ||
+                     text.toLowerCase().includes('zertifikate') ||
+                     text.toLowerCase().includes('auszeichnungen');
+      if (isCert) {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.showCorruptedTransferWarning(href);
+        });
+      }
+    });
+  }
+
+  // ============================================================
+  // TEMPORÄR & PERSÖNLICH FÜR HANNES SCHURIG:
+  // Warnfenster vor dem Öffnen der Zertifikate & Auszeichnungen
+  // ============================================================
+  showCorruptedTransferWarning(targetUrl) {
+    const modalId = `transfer-corrupted-${Date.now()}`;
+    sound.playWarningBeep();
+
+    const deskRect = windowManager.desktopArea 
+      ? windowManager.desktopArea.getBoundingClientRect() 
+      : { width: window.innerWidth, height: window.innerHeight - 60 };
+    const winWidth = Math.min(520, deskRect.width - 24);
+    const winHeight = 350;
+    const posX = Math.max(10, Math.round((deskRect.width - winWidth) / 2));
+    const posY = Math.max(10, Math.round((deskRect.height - winHeight) / 2));
+
+    const warnIcon = `<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+
+    windowManager.createWindow({
+      id: modalId,
+      title: 'SEC//SYS: TRANSFER INTERCEPTED',
+      icon: warnIcon,
+      theme: 'amber',
+      width: winWidth,
+      height: winHeight,
+      x: posX,
+      y: posY,
+      contentHtml: `
+        <div class="p-4 flex flex-col justify-between h-full font-mono text-xs select-none">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-amber-500/30 text-amber-400 font-bold tracking-wider text-sm animate-pulse">
+              <span>⚠️</span>
+              <span>AGENT DATA TRANSFER CORRUPTED...</span>
+            </div>
+
+            <div class="p-2.5 bg-black/60 border border-amber-500/40 rounded text-amber-300/90 text-[11px] leading-relaxed">
+              <span class="text-amber-400 font-bold">// SYSTEM PROTOCOL NOTICE:</span><br>
+              PAYLOAD PARTIALLY VERIFIED // REPOSITORY VERSION: &lt;= 2020 ONLY
+            </div>
+
+            <div class="text-gray-300 text-xs leading-relaxed space-y-2 pt-1 font-sans">
+              <p>
+                Die hier hinterlegte Version der <strong class="text-amber-300 font-mono">Zertifikate &amp; Auszeichnungen</strong> umfasst aktuell nur Nachweise bis einschließlich <strong>2020</strong>.
+              </p>
+              <p class="text-gray-400 text-[11px] font-sans">
+                Ich trage aktuell sämtliche <strong class="text-cyan-300 font-mono">(15+) Fortbildungen &amp; Zertifizierungen</strong> aus den Jahren <strong>2021 bis 2026</strong> zusammen und werde das Dokument zeitnah auf den neuesten Stand bringen.
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-amber-500/25 flex items-center justify-between gap-3 flex-wrap">
+            <button type="button" id="btn-cancel-transfer" class="px-3.5 py-1.5 border border-gray-600 hover:border-gray-400 text-gray-400 hover:text-white rounded text-xs font-mono transition cursor-pointer">
+              ABBRECHEN
+            </button>
+            <button type="button" id="btn-open-stream" class="px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400 text-amber-300 hover:text-amber-200 rounded text-xs font-mono font-bold tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+              <span>OPEN DATA STREAM</span>
+              <span class="text-[10px]">↗</span>
+            </button>
+          </div>
+        </div>
+      `
+    });
+
+    const modalEl = document.getElementById(`win-${modalId}`);
+    if (modalEl) {
+      const cancelBtn = modalEl.querySelector('#btn-cancel-transfer');
+      const openBtn = modalEl.querySelector('#btn-open-stream');
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          sound.playKeyClick();
+          windowManager.closeWindow(modalId);
+        });
+      }
+
+      if (openBtn) {
+        openBtn.addEventListener('click', () => {
+          sound.playAccessGranted();
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+          windowManager.closeWindow(modalId);
+        });
+      }
+    }
   }
 
   // Open Radar Telemetry Window
@@ -1340,6 +1538,10 @@ class App {
     if (windowManager.getWindow('contact-modal')) {
       windowManager.restoreWindow('contact-modal');
       windowManager.focusWindow('contact-modal');
+      if (prefill.subject) {
+        const subjInput = document.getElementById('contact-subject');
+        if (subjInput) subjInput.value = prefill.subject;
+      }
       return;
     }
 

@@ -42,8 +42,8 @@ AddCharset UTF-8 .html .css .js .json .xml
     RewriteRule ^intern(/.*)?$ - [F,L]
 </IfModule>
 
-# 4. Block direct browser access to sensitive configuration files
-<FilesMatch "^(config\.php|config\.example\.php|\.env)$">
+# 4. Block direct browser access to sensitive configuration and prompt files
+<FilesMatch "^(config\.php|config\.example\.php|system_prompt\.php|system_prompt\.example\.php|\.env)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -53,10 +53,15 @@ AddCharset UTF-8 .html .css .js .json .xml
     </IfModule>
 </FilesMatch>
 
-# 5. Block .git, .env, log and other sensitive dotfiles
-<FilesMatch "^(\.(git|env|htpasswd|DS_Store)|.*\.log|composer\.lock)">
-    Order allow,deny
-    Deny from all
+# 5. Block ALL hidden dotfiles (.rate_limits.json, .key_state.json, .git, .env) and logs
+<FilesMatch "(^\..*|.*\.log|composer\.lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
 # 6. Compression (Gzip / Deflate)

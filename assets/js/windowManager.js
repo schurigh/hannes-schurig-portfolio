@@ -63,6 +63,8 @@ class WindowManager {
         icon = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9.5" stroke-width="1.8" /><circle cx="12" cy="12" r="4.8" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="1.5 1.5" /><path d="M12 12 L20.2 8.2 A 9.5 9.5 0 0 0 17.5 4.8 Z" fill="currentColor" fill-opacity="0.3" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><line x1="12" y1="12" x2="17.5" y2="4.8" stroke-width="1.8" stroke-linecap="round" /></svg>`;
       } else if (id === 'contact-modal') {
         icon = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`;
+      } else if (id === 'ai-comm') {
+        icon = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h9" /><circle cx="7" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><circle cx="10.5" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><circle cx="14" cy="10.5" r="0.9" fill="currentColor" stroke="none" /><line x1="17" y1="3" x2="22" y2="4" stroke-width="1.2" /><line x1="22" y1="4" x2="21" y2="9" stroke-width="1.2" /><line x1="21" y1="9" x2="16" y2="8" stroke-width="1.2" /><line x1="16" y1="8" x2="17" y2="3" stroke-width="1.2" /><line x1="17" y1="3" x2="21" y2="9" stroke-width="1.2" /><circle cx="17" cy="3" r="1.4" fill="currentColor" stroke="none" /><circle cx="21" cy="9" r="1.4" fill="currentColor" stroke="none" /><circle cx="22" cy="4" r="0.85" fill="currentColor" stroke="none" /><circle cx="16" cy="8" r="0.85" fill="currentColor" stroke="none" /></svg>`;
       } else {
         icon = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`;
       }
@@ -422,10 +424,17 @@ class WindowManager {
         stepY = Math.floor(maxSpanY / (count - 1));
       }
     }
-    stepX = Math.max(28, stepX);
-    stepY = Math.max(32, stepY);
+    // Desktop icons offset check: ensure first window starts to the right of the desktop icons
+    const deskIconsEl = document.getElementById('desktop-icons');
+    let iconsRightEdge = 135;
+    if (deskIconsEl && deskIconsEl.children.length > 0) {
+      const rect = deskIconsEl.getBoundingClientRect();
+      const deskLeft = deskRect.left || 0;
+      iconsRightEdge = Math.max(iconsRightEdge, Math.round(rect.right - deskLeft));
+    }
+    const safeLeftOffset = iconsRightEdge + 30; // Clear icons with comfortable breathing room
 
-    const startX = Math.max(24, Math.round(vW * 0.04));
+    const startX = Math.max(safeLeftOffset, Math.round(vW * 0.12));
     const startY = Math.max(20, Math.round(vH * 0.035));
 
     // 4. Position each window: largest in back (lowest z-index), smallest in front (highest z-index)

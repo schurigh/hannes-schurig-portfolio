@@ -318,6 +318,9 @@ export class TerminalShell {
     // All interactive and system directives are available
     return [
       { cmd: 'help', desc: 'Display authorized system commands.' },
+      { cmd: 'ask [query]', desc: 'Query Operator AI assistant directly from terminal.' },
+      { cmd: 'frage [frage]', desc: 'Alias für ask: Frage an den KI-Operator stellen.' },
+      { cmd: 'ai', desc: 'Open Operator AI Communicator (SECOPS Communicator).' },
       { cmd: 'send-msg', desc: 'Open encrypted dispatch channel to operator.' },
       { cmd: 'ls', desc: 'List active portfolio projects in virtual filesystem.' },
       { cmd: 'open', desc: 'Open project specification: open [slug].' },
@@ -380,6 +383,25 @@ export class TerminalShell {
         this.printLine('  * admin    (Root Operator - Full Clearance)');
         this.printLine('  * user     (Standard Operations)');
         this.printLine('  * guest    (Restricted Terminal Clearance)');
+        break;
+
+      case 'ask':
+      case 'frage': {
+        const question = fullArgString ? fullArgString.trim() : '';
+        if (!question) {
+          this.printLine("USAGE: ask [frage an den operator] / frage [frage]", 'output-warn');
+          return;
+        }
+        window.dispatchEvent(new CustomEvent('app:open-ai-comm', {
+          detail: { prompt: question }
+        }));
+        this.printLine(`[SEC//COMM] DISPATCHING QUERY TO OPERATOR AI: "${question}"...`, 'output-success');
+        break;
+      }
+
+      case 'ai':
+        window.dispatchEvent(new CustomEvent('app:open-ai-comm'));
+        this.printLine('OPERATOR AI COMMUNICATOR NODE INITIALIZED.', 'output-success');
         break;
 
       case 'send-msg':
@@ -953,39 +975,6 @@ export class TerminalShell {
 
   // 5s Countdown Reboot
   triggerRebootSequence() {
-    const modalId = 'reboot-modal';
-    windowManager.createWindow({
-      id: modalId,
-      title: 'SYS//WARP: HARDWARE REBOOT',
-      contentHtml: `
-        <div style="padding: 24px; text-align: center; font-family: 'Oxanium', monospace; color: #00e5ff;">
-          <div style="font-size: 14px; font-weight: 600; letter-spacing: 1.5px;">SYSTEM REBOOT IN PROGRESS</div>
-          <div id="reboot-counter" style="font-size: 54px; font-weight: 800; margin: 10px 0; text-shadow: 0 0 16px #00e5ff;">5</div>
-          <div style="font-size: 11px; color: #94a3b8;">CLOSING RUNTIME BUFFER THREADS...</div>
-        </div>
-      `,
-      width: 400,
-      height: 220
-    });
-
-    let count = 5;
-    const counterEl = document.getElementById('reboot-counter');
-    const interval = setInterval(() => {
-      count--;
-      if (counterEl) counterEl.textContent = count;
-      sound.playCountdownBeep();
-
-      if (count <= 0) {
-        clearInterval(interval);
-        document.body.classList.add('crt-collapse-active');
-        setTimeout(() => {
-          document.body.style.background = '#000000';
-          document.body.innerHTML = '';
-          setTimeout(() => {
-            window.location.reload();
-          }, 5000);
-        }, 650);
-      }
-    }, 1000);
+    window.dispatchEvent(new CustomEvent('app:reboot'));
   }
 }
