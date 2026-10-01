@@ -18,6 +18,8 @@ $profileFile = file_exists(__DIR__ . '/data/profile.json') ? 'data/profile.json'
 $projectsFile = file_exists(__DIR__ . '/data/projects.json') ? 'data/projects.json' : 'data/projects.example.json';
 $cssVersion = file_exists(__DIR__ . '/assets/css/cyber-theme.css') ? filemtime(__DIR__ . '/assets/css/cyber-theme.css') : time();
 $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ . '/assets/js/app.js') : time();
+$profileVersion = file_exists(__DIR__ . '/' . $profileFile) ? filemtime(__DIR__ . '/' . $profileFile) : time();
+$projectsVersion = file_exists(__DIR__ . '/' . $projectsFile) ? filemtime(__DIR__ . '/' . $projectsFile) : time();
 ?>
 <!DOCTYPE html>
 <html lang="de" class="theme-cyan">
@@ -30,11 +32,21 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
   <meta name="description" content="Interaktives CyberDeck Portfolio OS & Command Center. Vibecoding, AI Orchestration & Creative Engineering.">
   <meta name="theme-color" content="#030712">
   <meta name="csrf-token" content="<?= $csrfToken ?>">
-  <meta name="profile-source" content="<?= $profileFile ?>">
-  <meta name="projects-source" content="<?= $projectsFile ?>">
+  <meta name="profile-source" content="<?= $profileFile ?>?v=<?= $profileVersion ?>">
+  <meta name="projects-source" content="<?= $projectsFile ?>?v=<?= $projectsVersion ?>">
   <meta property="og:title" content="CyberDeck OS // Interaktives Portfolio">
   <meta property="og:description" content="Interaktives Cyber-War-Room Portfolio im Terminal- und Fake-OS-Stil.">
   <meta property="og:type" content="website">
+
+  <!-- Favicons & App Icons for all platforms -->
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="shortcut icon" href="favicon.ico">
+  <meta name="msapplication-TileColor" content="#030712">
+  <meta name="msapplication-config" content="browserconfig.xml">
 
   <!-- Local Stylesheets (No external CDNs - 100% DSGVO-compliant) -->
   <link rel="stylesheet" href="assets/css/tailwind.min.css">
@@ -109,7 +121,7 @@ $appJsVersion = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ .
               </a>
               <div class="text-gray-400 flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Stand: 29.09.2026</span>
+                <span>Stand: 01.10.2026</span>
               </div>
             </div>
           </div>

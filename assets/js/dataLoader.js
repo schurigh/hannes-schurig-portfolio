@@ -27,10 +27,10 @@ class DataLoader {
       ]);
 
       // Graceful fallback to example files if local files were not found
-      if (!profileRes.ok && profileSrc !== 'data/profile.example.json') {
+      if (!profileRes.ok && !profileSrc.includes('profile.example.json')) {
         profileRes = await fetch('data/profile.example.json');
       }
-      if (!projectsRes.ok && projectsSrc !== 'data/projects.example.json') {
+      if (!projectsRes.ok && !projectsSrc.includes('projects.example.json')) {
         projectsRes = await fetch('data/projects.example.json');
       }
 

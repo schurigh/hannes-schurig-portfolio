@@ -40,11 +40,35 @@ if (is_file($path)) {
         'html' => 'text/html',
         'txt'  => 'text/plain',
         'pdf'  => 'application/pdf',
+        'webmanifest' => 'application/manifest+json',
+        'xml'  => 'application/xml',
     ];
-    if (isset($mimes[$ext])) {
-        header('Content-Type: ' . $mimes[$ext]);
+    $mtime = filemtime($path);
+    $size = filesize($path);
+    $etag = sprintf('"%x-%x"', $mtime, $size);
+    $lastModified = gmdate('D, d M Y H:i:s', $mtime) . ' GMT';
+
+    // HTTP Conditional Validation:
+    // If the browser already has the current version, return 304 Not Modified (0 bytes transferred!)
+    $ifNoneMatch = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? trim($_SERVER['HTTP_IF_NONE_MATCH']) : null;
+    $ifModifiedSince = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? trim($_SERVER['HTTP_IF_MODIFIED_SINCE']) : null;
+
+    if ($ifNoneMatch === $etag || ($ifModifiedSince && strtotime($ifModifiedSince) >= $mtime)) {
+        http_response_code(304);
+        header('ETag: ' . $etag);
+        header('Last-Modified: ' . $lastModified);
+        header('Cache-Control: no-cache');
+        exit;
     }
-    return false; // serve the file as-is
+
+    $contentType = $mimes[$ext] ?? mime_content_type($path) ?: 'application/octet-stream';
+    header('Content-Type: ' . $contentType);
+    header('Content-Length: ' . $size);
+    header('ETag: ' . $etag);
+    header('Last-Modified: ' . $lastModified);
+    header('Cache-Control: no-cache');
+    readfile($path);
+    exit;
 }
 
 // Fall through to index.php for PHP routes

@@ -1235,14 +1235,14 @@ class App {
                     const badgeText = att.type || (att.url ? 'LINK' : 'PDF');
                     return `
                     <a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="operator-attachment-card group">
-                      <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="text-cyan-400 text-base">${icon}</span>
-                        <div class="min-w-0">
+                      <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                        <span class="text-cyan-400 text-base shrink-0 mt-0.5">${icon}</span>
+                        <div class="min-w-0 flex-1">
                           <div class="att-title truncate">${escapeHtml(att.title || att.name)}</div>
-                          <div class="att-meta truncate">${escapeHtml(att.desc || att.file || att.url)}</div>
+                          <div class="att-meta">${escapeHtml(att.desc || att.file || att.url)}</div>
                         </div>
                       </div>
-                      <div class="flex items-center gap-2 shrink-0">
+                      <div class="flex items-center gap-2 shrink-0 pt-0.5">
                         ${att.size ? `<span class="text-[10px] text-gray-400 font-mono">${escapeHtml(att.size)}</span>` : ''}
                         <span class="att-badge">${escapeHtml(badgeText)}</span>
                         <span class="text-cyan-400 text-xs group-hover:translate-x-0.5 transition-transform">↗</span>
@@ -1382,109 +1382,6 @@ class App {
       });
     }
 
-    // ============================================================
-    // TEMPORÄR & PERSÖNLICH FÜR HANNES SCHURIG:
-    // Interceptor für Klicks auf "Zertifikate & Auszeichnungen"
-    // ============================================================
-    const attachmentLinks = win.element.querySelectorAll('.operator-attachment-card, .job-attachment-btn');
-    attachmentLinks.forEach((link) => {
-      const href = link.getAttribute('href') || '';
-      const text = link.textContent || '';
-      const isCert = href.toLowerCase().includes('auszeichnungen') ||
-                     text.toLowerCase().includes('zertifikate') ||
-                     text.toLowerCase().includes('auszeichnungen');
-      if (isCert) {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.showCorruptedTransferWarning(href);
-        });
-      }
-    });
-  }
-
-  // ============================================================
-  // TEMPORÄR & PERSÖNLICH FÜR HANNES SCHURIG:
-  // Warnfenster vor dem Öffnen der Zertifikate & Auszeichnungen
-  // ============================================================
-  showCorruptedTransferWarning(targetUrl) {
-    const modalId = `transfer-corrupted-${Date.now()}`;
-    sound.playWarningBeep();
-
-    const deskRect = windowManager.desktopArea 
-      ? windowManager.desktopArea.getBoundingClientRect() 
-      : { width: window.innerWidth, height: window.innerHeight - 60 };
-    const winWidth = Math.min(520, deskRect.width - 24);
-    const winHeight = 350;
-    const posX = Math.max(10, Math.round((deskRect.width - winWidth) / 2));
-    const posY = Math.max(10, Math.round((deskRect.height - winHeight) / 2));
-
-    const warnIcon = `<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
-
-    windowManager.createWindow({
-      id: modalId,
-      title: 'SEC//SYS: TRANSFER INTERCEPTED',
-      icon: warnIcon,
-      theme: 'amber',
-      width: winWidth,
-      height: winHeight,
-      x: posX,
-      y: posY,
-      contentHtml: `
-        <div class="p-4 flex flex-col justify-between h-full font-mono text-xs select-none">
-          <div class="space-y-3">
-            <div class="flex items-center gap-2.5 pb-2 border-b border-amber-500/30 text-amber-400 font-bold tracking-wider text-sm animate-pulse">
-              <span>⚠️</span>
-              <span>AGENT DATA TRANSFER CORRUPTED...</span>
-            </div>
-
-            <div class="p-2.5 bg-black/60 border border-amber-500/40 rounded text-amber-300/90 text-[11px] leading-relaxed">
-              <span class="text-amber-400 font-bold">// SYSTEM PROTOCOL NOTICE:</span><br>
-              PAYLOAD PARTIALLY VERIFIED // REPOSITORY VERSION: &lt;= 2020 ONLY
-            </div>
-
-            <div class="text-gray-300 text-xs leading-relaxed space-y-2 pt-1 font-sans">
-              <p>
-                Die hier hinterlegte Version der <strong class="text-amber-300 font-mono">Zertifikate &amp; Auszeichnungen</strong> umfasst aktuell nur Nachweise bis einschließlich <strong>2020</strong>.
-              </p>
-              <p class="text-gray-400 text-[11px] font-sans">
-                Ich trage aktuell sämtliche <strong class="text-cyan-300 font-mono">(15+) Fortbildungen &amp; Zertifizierungen</strong> aus den Jahren <strong>2021 bis 2026</strong> zusammen und werde das Dokument zeitnah auf den neuesten Stand bringen.
-              </p>
-            </div>
-          </div>
-
-          <div class="pt-3 border-t border-amber-500/25 flex items-center justify-between gap-3 flex-wrap">
-            <button type="button" id="btn-cancel-transfer" class="px-3.5 py-1.5 border border-gray-600 hover:border-gray-400 text-gray-400 hover:text-white rounded text-xs font-mono transition cursor-pointer">
-              ABBRECHEN
-            </button>
-            <button type="button" id="btn-open-stream" class="px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400 text-amber-300 hover:text-amber-200 rounded text-xs font-mono font-bold tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-              <span>OPEN DATA STREAM</span>
-              <span class="text-[10px]">↗</span>
-            </button>
-          </div>
-        </div>
-      `
-    });
-
-    const modalEl = document.getElementById(`win-${modalId}`);
-    if (modalEl) {
-      const cancelBtn = modalEl.querySelector('#btn-cancel-transfer');
-      const openBtn = modalEl.querySelector('#btn-open-stream');
-
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-          sound.playKeyClick();
-          windowManager.closeWindow(modalId);
-        });
-      }
-
-      if (openBtn) {
-        openBtn.addEventListener('click', () => {
-          sound.playAccessGranted();
-          window.open(targetUrl, '_blank', 'noopener,noreferrer');
-          windowManager.closeWindow(modalId);
-        });
-      }
-    }
   }
 
   // Open Radar Telemetry Window
